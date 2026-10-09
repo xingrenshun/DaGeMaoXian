@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>场景文本丢失 · 事故定位与修复 · 打个毛线 Rope</title>
+<style>
+  :root{
+    --bg:#0f1216; --panel:#161b22; --panel2:#1c232c; --line:#2a333d;
+    --fg:#e6edf3; --dim:#9aa7b4; --accent:#4aa3ff; --red:#ff5d5d;
+    --amber:#ffb84d; --green:#43c96a;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--fg);
+       font:15px/1.7 "Microsoft YaHei","PingFang SC",-apple-system,"Segoe UI",sans-serif;}
+  .wrap{max-width:1000px;margin:0 auto;padding:40px 24px 80px;}
+  h1{font-size:26px;margin:0 0 6px;letter-spacing:.5px;}
+  .sub{color:var(--dim);font-size:13.5px;margin-bottom:28px;}
+  h2{font-size:18px;margin:38px 0 14px;padding-left:11px;border-left:3px solid var(--accent);}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:18px 20px;margin:14px 0;}
+  .verdict{background:linear-gradient(180deg,#1a2430,#151b23);border:1px solid #2f4a63;}
+  .verdict b{color:var(--green);}
+  code{background:#0b0e12;border:1px solid #232b34;border-radius:4px;
+       padding:1px 6px;font-family:Consolas,"Courier New",monospace;font-size:13px;color:#9fd0ff;}
+  pre{background:#0b0e12;border:1px solid #232b34;border-radius:8px;padding:14px 16px;
+      overflow:auto;font-family:Consolas,"Courier New",monospace;font-size:12.5px;line-height:1.6;color:#c8d4e0;}
+  pre .bad{color:var(--red);}
+  pre .ok{color:var(--green);}
+  table{width:100%;border-collapse:collapse;font-size:13.5px;margin:6px 0;}
+  th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top;}
+  th{color:var(--dim);font-weight:600;background:var(--panel2);}
+  td.mono{font-family:Consolas,"Courier New",monospace;font-size:12.5px;color:#a8c4dc;}
+  .tag{display:inline-block;padding:1px 8px;border-radius:20px;font-size:12px;margin-right:6px;}
+  .t-red{background:#3a1d1d;color:#ff8b8b;border:1px solid #5d2a2a;}
+  .t-green{background:#16301f;color:#7fdc9b;border:1px solid #24503a;}
+  .t-amber{background:#3a2f16;color:#ffcf7f;border:1px solid #5d4a24;}
+  ol,ul{padding-left:22px;margin:8px 0;}
+  li{margin:5px 0;}
+  .flow{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:10px 0;}
+  .step{background:var(--panel2);border:1px solid var(--line);border-radius:8px;
+        padding:9px 13px;font-size:13px;flex:0 1 auto;}
+  .arrow{color:var(--dim);font-size:15px;}
+  .step.danger{border-color:#5d2a2a;background:#221518;}
+  .kv{display:grid;grid-template-columns:150px 1fr;gap:6px 14px;font-size:13.5px;}
+  .kv div:nth-child(odd){color:var(--dim);}
+  .note{border-left:3px solid var(--amber);background:#1c1a12;padding:12px 16px;border-radius:0 8px 8px 0;margin:14px 0;font-size:13.5px;}
+  .note.green{border-color:var(--green);background:#121c16;}
+  .note.red{border-color:var(--red);background:#1c1214;}
+  .foot{margin-top:44px;padding-top:16px;border-top:1px solid var(--line);color:var(--dim);font-size:12.5px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>场景文本丢失 · 事故定位与修复</h1>
+  <div class="sub">工程：<code>Unity6000_打个毛线_Rope</code> · Unity 6000.2.15f1 · 2026-09-19</div>
+
+  <div class="card verdict">
+    <b>已定位并修复。</b> 这不是 Unity 的问题，也不是资源丢失 —— 是我 9-18 那次中文化的脚本
+    把场景 YAML 的字段缩进写坏了，导致 16 个 <code>UI.Text</code> 组件被 Unity 整体重置成默认值，
+    文案随之清空。原始数据已从备份完整恢复，修复通道也从「改 YAML」换成了「编辑器内脚本」。
+  </div>
+
+  <h2>一、损坏是怎么发生的</h2>
+
+  <div class="flow">
+    <div class="step danger">脚本正则改 YAML<br><small>丢掉缩进</small></div>
+    <span class="arrow">→</span>
+    <div class="step danger">Unity 反序列化失败<br><small>整块组件回默认值</small></div>
+    <span class="arrow">→</span>
+    <div class="step danger">编辑器保存场景<br><small>13:09:45 损坏落盘</small></div>
+    <span class="arrow">→</span>
+    <div class="step danger">文本消失</div>
+  </div>
+
+  <p>关键那一行，<code>m_Font</code> 本应是 <code>m_FontData</code> 的子键（缩进 4），却被写到了行首：</p>
+  <pre>  m_FontData:
+<span class="bad">m_Font: {fileID: 12800000, guid: 4b55cb..., type: 3}   ← 缩进 0，层级断了</span>
+    m_FontSize: 73
+    m_FontStyle: 1</pre>
+
+  <p>组件被重置成什么样（同一组件，左为原始、右为损坏后）：</p>
+  <table>
+    <tr><th style="width:34%">字段</th><th style="width:33%">原始（备份）</th><th>损坏后（磁盘）</th></tr>
+    <tr><td class="mono">m_Font</td><td class="mono">guid: 8cbaa696…（NEXON）</td><td class="mono" style="color:#ff8b8b">fileID: 0（空）</td></tr>
+    <tr><td class="mono">m_Text</td><td class="mono">Level Failed</td><td class="mono" style="color:#ff8b8b">（空）</td></tr>
+    <tr><td class="mono">m_FontSize</td><td class="mono">73</td><td class="mono" style="color:#ff8b8b">14（默认）</td></tr>
+    <tr><td class="mono">m_Alignment</td><td class="mono">4（居中）</td><td class="mono" style="color:#ff8b8b">0（左上）</td></tr>
+  </table>
+
+  <div class="note red">
+    <b>铁证：</b>20 个 Text 组件里，<b>凡是我改过的 16 个全废，没改过的 4 个（<code>00</code> / <code>+1500</code> / <code>-150</code> / <code>0</code>）完好无损</b>。
+    规律完全对应，不存在别的原因。
+  </div>
+
+  <h2>二、修复方式（换了通道）</h2>
+
+  <p>不再手写 YAML，改成让 Unity 自己改自己存 —— 新增
+     <code>Assets/MyAssets/Editor/RopeUITextRestore.cs</code>：</p>
+
+  <div class="kv">
+    <div>数据来源</div><div><code>_RopeScene_Backup_20260919_110241\Gameplay.unity</code>（未损坏的原始版本）</div>
+    <div>匹配方式</div><div>组件 fileID（<code>GlobalObjectId.targetObjectId</code>）+ <b>Transform 层级路径</b>，双键</div>
+    <div>恢复内容</div><div>字体、文案、字号、粗体、对齐、最大字号</div>
+    <div>触发时机</div><div>切回 Unity 重编译完成后<b>自动执行一次</b>（无需点菜单）</div>
+    <div>手动入口</div><div><code>Tools ▸ 打个毛线 ▸ 修复场景文本（中文化）</code> / <code>检查场景文本状态</code></div>
+    <div>安全性</div><div>幂等：只在「字体为空」或「文本为空」时才动；表外的只补字体、不改文案</div>
+    <div>未打开的场景</div><div>以 Additive 方式打开 → 修 → 存 → 关闭，不打扰你正在编辑的场景</div>
+  </div>
+
+  <div class="note">
+    <b>独立修复：</b> <code>CoinShop.unity</code> 里 6 行缩进错误的 <code>m_Font</code> 已直接写回（缩进 4）。
+    全工程扫过 <code>^(m_Font|m_Text|m_FontSize|m_Alignment|m_MaxSize):</code>，<b>没有其他同类残留</b>。
+  </div>
+
+  <h2>三、恢复的 16 条文案</h2>
+
+  <table>
+    <tr><th style="width:42%">对象路径</th><th style="width:29%">原标题</th><th>恢复为</th><th style="width:9%">字号</th></tr>
+    <tr><td class="mono">/Canvas/StartPanel/Text (1)</td><td class="mono">TAP TO PLAY</td><td>点击开始</td><td class="mono">89</td></tr>
+    <tr><td class="mono">/Canvas/StartPanel/CoinsShop/Text (2)</td><td class="mono">SHOP</td><td>商店</td><td class="mono">41</td></tr>
+    <tr><td class="mono">/Canvas/StartPanel/SpinWheelBtn/Text (Legacy)</td><td class="mono">SPIN</td><td>抽奖</td><td class="mono">32</td></tr>
+    <tr><td class="mono">/Canvas/StartPanel/SkipLevelBtn/Text (2)</td><td class="mono">SKIP LEVEL</td><td>跳过关卡</td><td class="mono">27</td></tr>
+    <tr><td class="mono">/Canvas/LevelText</td><td class="mono">Level 00</td><td>第 00 关</td><td class="mono">17</td></tr>
+    <tr><td class="mono">/Canvas/WinPanel/Text</td><td class="mono">Level Complete</td><td>关卡完成</td><td class="mono">73</td></tr>
+    <tr><td class="mono">/Canvas/WinPanel/Button/Text (3)</td><td class="mono">NEXT</td><td>下一关</td><td class="mono">72</td></tr>
+    <tr><td class="mono">/Canvas/RetryPanel/Text</td><td class="mono">Level Failed</td><td>关卡失败</td><td class="mono">73</td></tr>
+    <tr><td class="mono">/Canvas/RetryPanel/Button/Text (3)</td><td class="mono">RETRY</td><td>重试</td><td class="mono">72</td></tr>
+    <tr><td class="mono">/Canvas/CommingSoonPanel/Text</td><td class="mono">More Levels Comming Soon</td><td>更多关卡 敬请期待</td><td class="mono">73</td></tr>
+    <tr><td class="mono">/Canvas/CommingSoonPanel/Button/Text (3)</td><td class="mono">HOME</td><td>主页</td><td class="mono">72</td></tr>
+    <tr><td class="mono">/Canvas/SpinWheelPanel/SpinBtn/Text (Legacy)</td><td class="mono">SPIN</td><td>抽奖</td><td class="mono">43</td></tr>
+    <tr><td class="mono">/Canvas/SpinWheelPanel/CoinLessSpinBtn/Text (Legacy)</td><td class="mono">SPIN      -100</td><td>抽奖 -100</td><td class="mono">43</td></tr>
+    <tr><td class="mono">/Canvas/SpinWheelPanel/TimerText</td><td class="mono">New Text</td><td>可以抽奖啦！</td><td class="mono">48</td></tr>
+    <tr><td class="mono">/Canvas/SpinWheelPanel/WinCoinsPanel/Text (Legacy) (1)</td><td class="mono">CONGRATULATIONS</td><td>恭喜中奖</td><td class="mono">49</td></tr>
+    <tr><td class="mono">/Canvas/SpinWheelPanel/WinCoinsPanel/Ok/Text (Legacy)</td><td class="mono">CLOSE</td><td>关闭</td><td class="mono">36</td></tr>
+  </table>
+
+  <p style="color:var(--dim);font-size:13.5px;">
+    另 4 个纯数字文本（<code>00</code>、<code>+1500</code>、<code>-150</code>、<code>0</code>）本来就没坏，保持原样未动。
+    字体统一指向 <code>DroidSansFallback</code>（含汉字；英文场景原本用的 NEXON 字体子集里没有汉字）。
+  </p>
+
+  <h2>四、校验做到哪一步</h2>
+  <ul>
+    <li><span class="tag t-green">通过</span> C# 内嵌的 16 条路径 vs 备份真实层级路径，<b>逐字比对 16/16 一致</b></li>
+    <li><span class="tag t-green">通过</span> 中文用字 41 个，<b>全部命中</b> DroidSansFallback 子集（cmap 校验）</li>
+    <li><span class="tag t-green">通过</span> API 名称在 <code>UnityEditor.dll</code> 中二进制核对存在（<code>sceneOpened</code> / <code>GlobalObjectId</code> / <code>MarkSceneDirty</code> / <code>SaveScene</code> …）</li>
+    <li><span class="tag t-green">通过</span> <code>Editor.log</code> 时序：最后一条 <code>error CS</code> 已早于最后一次重载程序集与字体生成 → <b>当前工程编译干净</b></li>
+    <li><span class="tag t-amber">受限</span> 安全策略拦截 <code>csc.exe</code>，无法做单文件编译验证；改用括号配平自检 + 程序集符号核对</li>
+  </ul>
+
+  <h2>五、需要你做的（1 步）</h2>
+  <div class="note green">
+    <b>切回 Unity 窗口即可。</b> 它会检测到新脚本 → 重新编译 → 自动执行修复并保存场景。
+    然后在 Console 里搜 <code>[文本修复]</code>，应看到类似：
+    <pre style="margin-top:8px">[文本修复] Gameplay  /Canvas/StartPanel/Text (1)  ->  "点击开始"
+…
+[文本修复] 完成，共处理 16 个 Text 组件（自动）</pre>
+    若显示 0 条，执行菜单 <code>Tools ▸ 打个毛线 ▸ 检查场景文本状态</code> 看是否有「异常」计数。
+  </div>
+
+  <div class="note red">
+    <b>在修复跑完之前，请不要在编辑器里手动保存 Gameplay 场景</b>，也不要手改它的文案 ——
+    会与修复脚本抢同一份数据。修复完成后就正常了。
+  </div>
+
+  <h2>六、回滚与备份</h2>
+  <table>
+    <tr><th style="width:52%">路径</th><th>用途</th></tr>
+    <tr><td class="mono">…\_RopeScene_Backup_20260919_110241\Gameplay.unity</td><td><b>未损坏原始场景</b>，恢复依据，别删</td></tr>
+    <tr><td class="mono">…\_RopeSceneBackup2_20260919_134234\CoinShop.unity</td><td>改缩进前的 CoinShop</td></tr>
+    <tr><td class="mono">…\_RopeMeta_Backup_20260919_110951\</td><td>82 个纹理/音频 .meta</td></tr>
+    <tr><td class="mono">…\_RopeFont_Backup_20260919_111034\</td><td>2 个字体原件</td></tr>
+  </table>
+
+  <div class="foot">
+    本次修复未触碰任何字体文件、未改动包体瘦身成果；<code>NEXON Football Gothic B.otf</code> 子集经确认仍含完整 A-Z / a-z / 0-9 与符号。
+  </div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>「点下一关就卡死」DOTween 崩溃排查修复报告 · 宥如极速冒险</title>
+<style>
+  :root{
+    --bg:#0f1115; --card:#171a21; --card2:#1c2029; --line:#262b36;
+    --fg:#e6e9ef; --fg2:#9aa4b2; --fg3:#6b7482;
+    --red:#ff6b6b; --redbg:#2a1a1d;
+    --grn:#3ddc97; --grnbg:#12261f;
+    --yel:#f5c451; --yelbg:#2a2418;
+    --blu:#6ba8ff; --blubg:#151e2e;
+    --mono:"Cascadia Code","Consolas","SF Mono",Menlo,monospace;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; padding:40px 24px 80px;
+    background:var(--bg); color:var(--fg);
+    font:15px/1.75 -apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:940px;margin:0 auto}
+  h1{font-size:26px;margin:0 0 6px;letter-spacing:.3px}
+  h2{font-size:19px;margin:38px 0 14px;padding-left:11px;border-left:3px solid var(--blu)}
+  h3{font-size:16px;margin:24px 0 10px;color:var(--fg)}
+  .sub{color:var(--fg3);font-size:13px;margin-bottom:28px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:18px 20px;margin:14px 0}
+  .card2{background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:16px 18px;margin:12px 0}
+  code{font-family:var(--mono);font-size:12.5px;background:#0b0d11;border:1px solid var(--line);border-radius:4px;padding:1.5px 5px;color:#cfe3ff}
+  pre{font-family:var(--mono);font-size:12.5px;line-height:1.7;background:#0b0d11;border:1px solid var(--line);border-radius:8px;padding:14px 16px;overflow-x:auto;margin:12px 0;color:#cfd6e2}
+  pre .hl{color:var(--red);font-weight:600}
+  pre .ok{color:var(--grn)}
+  pre .dim{color:var(--fg3)}
+  table{width:100%;border-collapse:collapse;margin:14px 0;font-size:13.5px}
+  th,td{text-align:left;padding:9px 11px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{color:var(--fg2);font-weight:600;background:#141821}
+  tr:last-child td{border-bottom:none}
+  .tag{display:inline-block;font-size:11.5px;font-family:var(--mono);padding:2px 7px;border-radius:5px;white-space:nowrap}
+  .t-red{background:var(--redbg);color:var(--red);border:1px solid #3d2024}
+  .t-grn{background:var(--grnbg);color:var(--grn);border:1px solid #1c3d31}
+  .t-yel{background:var(--yelbg);color:var(--yel);border:1px solid #3d3520}
+  .t-blu{background:var(--blubg);color:var(--blu);border:1px solid #1e2c44}
+  .note{border-left:3px solid var(--yel);background:var(--yelbg);padding:12px 16px;border-radius:0 8px 8px 0;margin:14px 0;font-size:13.5px}
+  .danger{border-left:3px solid var(--red);background:var(--redbg);padding:12px 16px;border-radius:0 8px 8px 0;margin:14px 0;font-size:13.5px}
+  .good{border-left:3px solid var(--grn);background:var(--grnbg);padding:12px 16px;border-radius:0 8px 8px 0;margin:14px 0;font-size:13.5px}
+  ul,ol{padding-left:22px;margin:10px 0}
+  li{margin:5px 0}
+  .flow{font-family:var(--mono);font-size:12.5px;line-height:1.9;color:var(--fg2)}
+  .flow b{color:var(--fg)}
+  .fname{font-family:var(--mono);font-size:12.5px;color:#8fd6ff}
+  hr{border:none;border-top:1px solid var(--line);margin:34px 0}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>「点下一关就卡死」排查修复报告</h1>
+<div class="sub">工程：宥如极速冒险（ColorRope / 打个毛线 Rope）　·　Unity 6000.2.15f1 + TTSDK 6.9.4　·　2026-09-22</div>
+
+<div class="danger">
+<b>一句话结论：</b>不是广告的问题，也不是场景跳转逻辑的问题 —— 是 <b>DOTween 补间在场景被销毁后仍然去写已销毁物体的 Transform</b>，抛出 <code>MissingReferenceException</code>；而本工程 WebGL 的 <b>Enable Exceptions = None</b>，这个异常无法被捕获，直接把整个 WASM <code>abort</code> 掉，于是整局游戏卡死、Unity 侧连一条可读报错都没有。
+</div>
+
+<h2>1. 现象</h2>
+<div class="card">
+在抖音开发者工具里通关后点「下一关」，游戏直接冻死。控制台只有这么几条：
+<pre>✖ Uncaught exception from main loop:   tmg-core.js:1
+<span class="hl">   at wasm://wasm/9c6e38c2:wasm-function[59201]:0x1a93ec9
+   at wasm://wasm/9c6e38c2:wasm-function[37677]:0xc7cd385
+   at wasm://wasm/9c6e38c2:wasm-function[37521]:0xc9cd59b
+   at wasm://wasm/9c6e38c2:wasm-function[32164]:0x8c2b96</span>
+   at invoke_viiiiiiiiiiii (webgl.framework.js:10:501466)
+✖ Uncaught:
+✖ <span class="hl">Halting program</span>:
+[TMG][AppLog-error]: errorCode: 2001, message: undefined
+[TMC][USER_RUNTIME_ERROR]: at requestAnimationFrame callback ... undefined</pre>
+后面跟着的 <code>插播广告关闭</code> / <code>小游戏:tt9bb6ed0b05ce27b002没点击事件埋点</code> 是<b>正常的</b>广告回调日志，不是崩因 —— 说明广告那条链路已经完整跑完了。
+</div>
+
+<h2>2. 关键证据：把 wasm 栈翻译回 C#</h2>
+<div class="card">
+构建产物里带了 <code>tt-minigame/tt-minigame/webgl.symbols.json</code>（121879 条 <code>函数索引 → 符号名</code> 映射）。把崩溃栈里的函数号直接喂进去：
+<table>
+<tr><th>wasm 函数</th><th>符号名</th><th>含义</th></tr>
+<tr><td><code>invoke_viiiiiiiiiiii</code></td><td><span class="fname">(webgl.framework.js)</span></td><td>JS 反向调进 wasm 的桥接入口</td></tr>
+<tr><td><code>[32164]</code></td><td><span class="fname">List&lt;T&gt;.BinarySearch</span></td><td>泛型共享槽，名字仅供参考</td></tr>
+<tr><td><code>[37521]</code></td><td><span class="fname">ShortcutExtensions_DOColor</span></td><td>DOTween 的 DO* 扩展方法族</td></tr>
+<tr><td><code>[37677]</code></td><td><span class="fname">…DisplayClass44_0_&lt;DOScale&gt;b__1</span></td><td><b>DOTween DOScale 的 setter 闭包</b></td></tr>
+<tr><td><code>[59201]</code></td><td><span class="fname">Transform_set_localScale</span></td><td><b>崩溃点：给 Transform 写 localScale</b></td></tr>
+</table>
+<div class="good">
+<b>结论：崩溃发生在「DOTween 的补间执行到 <code>transform.localScale = 值</code>」这一瞬间。</b>
+而不是在广告回调里、不是在 JSON 解析里、也不是关卡越界（已核对：840 个关卡文件 ↔ 场景 <code>levelsJson</code> 列表 840 条，索引 0–839 完全对齐，且最后一关走的是「敬请期待」面板，点不到「下一关」）。
+</div>
+</div>
+
+<h2>3. 根因链（5 步）</h2>
+<div class="card">
+<div class="flow">
+<b>①</b> 通关瞬间，一堆补间同时在跑：<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="fname">GameManager.InvokeWinGame()</span> → <code>winPanel.transform.DOScale(one, .5f)</code><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="fname">CoinsAnimation.CountCoins()</span> → 每枚金币 4 条补间，带 <code>SetDelay(delay+1.5f)</code>，<b>最后一枚要到通关后约 2.7 秒才结束</b><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="fname">Roll.RotateRoll()</span> → <code>DORotate(...).SetLoops(-1)</code>，<b>无限循环、永远不会自己结束</b><br><br>
+<b>②</b> 玩家在这期间点「下一关」→ <code>SceneManager.LoadScene("Gameplay")</code><br><br>
+<b>③</b> 场景被销毁，<code>winPanel</code> / 金币 / Roll 这些物体全没了，<b>但补间还挂在 DOTween 的全局列表里</b><br><br>
+<b>④</b> 下一帧 DOTween 继续更新 → 对已销毁的 Transform 写 <code>localScale</code> → <span class="hl">MissingReferenceException</span><br><br>
+<b>⑤</b> 本工程 <code>webGLExceptionSupport: 0</code>（Enable Exceptions = <b>None</b>）
+→ WebGL 里编译成 <code>DISABLE_EXCEPTION_CATCHING</code>，<b>任何托管异常都无法捕获，直接 abort 整个 WASM</b>
+→ 表现就是 <code>Uncaught exception from main loop</code> / <code>Halting program</code> / 整局卡死。
+</div>
+</div>
+
+<div class="note">
+<b>为什么以前没人发现？</b>同类问题在编辑器里只会打一条红字、游戏照跑；在真机上却会死得干干净净。<br>
+而且 <code>None</code> 这一档连代码里的 <code>try/catch</code> 都是失效的（DOTween 自己的 <code>safeMode</code> 也就救不回来），所以现场一点可读线索都不留 —— 这也是这次必须靠 <code>webgl.symbols.json</code> 反查的原因。
+</div>
+
+<h2>4. 修复清单</h2>
+
+<h3>① 根因修复：切场景前统一回收补间</h3>
+<table>
+<tr><th>文件</th><th>改动</th></tr>
+<tr>
+  <td><span class="fname">Scripts/RopeSceneGuard.cs</span><br><span class="tag t-blu">新建</span></td>
+  <td>新增场景跳转统一入口 <code>Load(string)</code> / <code>Load(int)</code> / <code>ReloadCurrent()</code>，
+      跳转前先 <code>DOTween.KillAll()</code> 并恢复 <code>Time.timeScale = 1</code>。
+      文件顶部写了完整的根因说明，以后谁再想在跳转前直接 <code>LoadScene</code> 会先看到这段。</td>
+</tr>
+<tr>
+  <td><span class="fname">Scripts/GameManager.cs</span></td>
+  <td><b>8 处</b>裸 <code>SceneManager.LoadScene</code> 全部改走守卫（下一关、重开、主页、OpenScene、两个调试键）；<br>
+      两个通关面板的 <code>DOScale</code> 加 <code>.SetLink(面板)</code>（面板被销毁时补间自动回收）；<br>
+      补上 <code>AudioManager</code> / <code>AdsManager</code> / <code>CoinsManager</code> / <code>Toast</code> 的单例空判断。</td>
+</tr>
+<tr>
+  <td><span class="fname">Scripts/CoinsAnimation.cs</span></td>
+  <td>金币的 4 条补间全部加 <code>.SetLink(coin.gameObject)</code> —— 这是<b>触发概率最高</b>的一处（延迟最长、最容易在还没跑完时切场景）。</td>
+</tr>
+<tr>
+  <td><span class="fname">Scripts/Roll.cs</span></td>
+  <td><code>RotateRoll()</code> 的无限循环 <code>DORotate</code> 加 <code>.SetLink(gameObject)</code> —— 它永远不会自己结束，只要关卡在它转着的时候被销毁就必崩。</td>
+</tr>
+<tr>
+  <td><span class="fname">Scripts/IAPShopManager.cs</span><br><span class="fname">Scripts/MainMenuController.cs</span></td>
+  <td>各自那处跳转改走守卫，广告调用换成空安全的 <code>AdsManager.TryShowInterstitial()</code>。</td>
+</tr>
+<tr>
+  <td><span class="fname">Scripts/AdsManager.cs</span></td>
+  <td>新增静态方法 <code>TryShowInterstitial()</code>：<code>Instance</code> 未就绪时静默跳过，不再让 <code>AdsManager.Instance.XXX</code> 抛空引用。</td>
+</tr>
+</table>
+
+<h3>② 第二层保险：打开 WebGL 异常支持</h3>
+<div class="card2">
+把 <code>webGLExceptionSupport</code> 从 <code>0</code>（None）改成 <code>2</code>（Full Without Stacktrace）：
+<ul>
+<li><code>ProjectSettings/ProjectSettings.asset</code> 已改；</li>
+<li>同时在 <span class="fname">Editor/RopeTTSDKBuildFix.cs</span> 的 <code>RopeBuildPreflight.OnPreprocessBuild</code> 里加了构建前强制校验
+    —— 因为 TTSDK 的 <code>SetupWebGLBuildSettings</code> 会在构建时覆盖 <code>PlayerSettings</code>，而这个回调的时机晚于它，最终生效的是我们的值。</li>
+</ul>
+<b>作用：</b>以后再出现空引用/索引越界，是「一条红字日志 + 游戏继续跑」，而不是「整局游戏没了」。<br>
+<b>代价：</b>包体增加约几百 KB、性能略降。当前包体 16MB 左右，离 30MB 还有余量。
+</div>
+<div class="note">
+这是<b>独立的第二层保险</b>，不是根因修复。即使不改这一项，上面的补间修复也已经能解决问题；
+但如果哪天又冒出新的异常，有这一层你不会再看到「整个游戏卡死」这种不可诊断的现场。
+</div>
+
+<h2>5. 怎么验证</h2>
+<div class="card">
+<ol>
+<li>切回 Unity，等编译完成，Console 不应有红色 error。</li>
+<li><b>直接点构建</b>（不用改任何设置）。</li>
+<li>开发者工具里跑到通关 → <b>在通关面板刚弹出的两三秒内立刻点「下一关」</b> —— 这是原来 100% 崩的时序，现在应当正常进入下一关。</li>
+<li>重复几次通关/重开/进商店/回主页，确认都不再出现 <code>Halting program</code>。</li>
+</ol>
+<div class="good">成功标志：控制台里再也不会出现 <code>Uncaught exception from main loop</code> 与 <code>Halting program</code>。</div>
+</div>
+
+<h2>6. 顺带发现的一个独立问题（未改，等你确认）</h2>
+<div class="note">
+<b>构建 appid 与广告 appid 不一致：</b>
+<table>
+<tr><th>位置</th><th>值</th></tr>
+<tr><td><code>Assets/Editor/StarkBuilderSetting.asset</code> 的 <code>_appId</code><br>（会被写进构建产物的 <code>project.config.json</code>）</td><td><code>tt8474f2c91a0fb1c002</code></td></tr>
+<tr><td>广告 SDK 的 AppId（<code>TikTokAdBootstrap.AppId</code>，你给我的）</td><td><code>tt9bb6ed0b05ce27b002</code></td></tr>
+</table>
+对照本机其它 7 个同类工程，每个工程的 <code>_appId</code> 都各不相同（<code>tt52a5…</code> / <code>ttd97a…</code> / <code>tt8e7c…</code> / <code>tt6c0b…</code> / <code>tt2951…</code> / <code>tt9e71…</code>），
+所以 <code>tt8474f2c91a0fb1c002</code> <b>不是模板残留，是本工程构建窗口里填着的值</b>。两个 appid 指向不同的应用，
+而广告位只对「所属的那个应用」有效 —— 真机上广告能不能填充，取决于运行 appid 与广告位归属是否一致。<br><br>
+<b>我没有擅自改它</b>，因为 appid 会直接影响构建/上传归属。请确认一下：这个包到底应该跑在哪个 appid 下？
+如果就是 <code>tt9bb6ed0b05ce27b002</code>，把 <code>StarkBuilderSetting.asset</code> 里的 <code>_appId</code> 换成它即可（一行）。
+</div>
+
+<h2>7. 备份与回滚</h2>
+<div class="card">
+改动前的原件全部保留在：
+<pre>_RopeCrashFix_Backup_20260922_185934\
+    ProjectSettings.asset
+    GameManager.cs / AdsManager.cs / IAPShopManager.cs
+    MainMenuController.cs / CoinsAnimation.cs / Roll.cs</pre>
+新增文件 <span class="fname">Scripts/RopeSceneGuard.cs</span> 无需备份，删掉并把调用改回 <code>SceneManager.LoadScene</code> 即回到原状（但崩溃也会回来）。
+</div>
+
+<hr>
+<div class="sub">
+排查路径：控制台崩溃栈 → 构建产物 <code>webgl.symbols.json</code> 反查函数符号 → 定位到 DOTween <code>DOScale</code> →
+核对关卡索引边界（排除越界）→ 确认广告回调完整跑完（排除广告）→ 锁定「补间活过场景销毁 + 异常支持 None」。
+</div>
+
+</div>
+</body>
+</html>

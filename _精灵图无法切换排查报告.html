@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>精灵图无法切换 · 排查与修复报告</title>
+<style>
+  :root{
+    --bg:#0f1115; --card:#171a21; --card2:#1d2129; --line:#2a2f3a;
+    --fg:#e8ecf3; --dim:#9aa4b2; --accent:#4ea1ff; --ok:#3fb950; --warn:#e3b341; --bad:#f85149;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;padding:32px 20px 64px;background:var(--bg);color:var(--fg);
+       font:15px/1.75 -apple-system,"Segoe UI","Microsoft YaHei",sans-serif}
+  .wrap{max-width:960px;margin:0 auto}
+  h1{font-size:26px;margin:0 0 6px}
+  .sub{color:var(--dim);font-size:13px;margin-bottom:26px}
+  h2{font-size:18px;margin:34px 0 12px;padding-left:10px;border-left:3px solid var(--accent)}
+  h3{font-size:15px;margin:22px 0 8px;color:#cfd6e2}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px 18px;margin:14px 0}
+  .k{background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin:14px 0}
+  table{width:100%;border-collapse:collapse;font-size:14px;margin:10px 0}
+  th,td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+  th{background:var(--card2);color:var(--dim);font-weight:600;white-space:nowrap}
+  code{background:#0b0d11;border:1px solid var(--line);border-radius:4px;padding:1px 5px;
+       font:13px/1.5 Consolas,"Cascadia Mono",monospace;color:#9cdcfe}
+  pre{background:#0b0d11;border:1px solid var(--line);border-radius:8px;padding:12px 14px;overflow:auto;
+      font:13px/1.6 Consolas,"Cascadia Mono",monospace;color:#c8d3e0}
+  .good{color:var(--ok)} .warn{color:var(--warn)} .bad{color:var(--bad)} .dim{color:var(--dim)}
+  .tag{display:inline-block;font-size:12px;padding:1px 8px;border-radius:99px;border:1px solid var(--line);
+       background:var(--card2);color:var(--dim);margin-right:6px}
+  ul{margin:8px 0 8px 20px;padding:0} li{margin:5px 0}
+  .big{font-size:34px;font-weight:700;letter-spacing:-.5px}
+  .flow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:10px 0;font-size:14px}
+  .box{border:1px solid var(--line);background:var(--card2);border-radius:8px;padding:8px 12px}
+  .box.bad2{border-color:#5a2b2b;background:#241617}
+  .box.ok2{border-color:#2c4a30;background:#152018}
+  .note{border-left:3px solid var(--warn);padding-left:12px;color:#e6d5a8;margin:12px 0}
+  .hr{height:1px;background:var(--line);margin:30px 0}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>精灵图无法切换 · 排查与修复报告</h1>
+  <div class="sub">
+    工程：Unity6000_打个毛线_Rope · Unity 6000.2.15f1 · 抖音小游戏<br>
+    对象：<code>Assets/AdSDK/Resources/按钮.png</code>（截图中的选中项）<br>
+    排查时间：2026-09-20
+  </div>
+
+  <h2>一句话结论</h2>
+  <div class="k">
+    <div class="big bad">Sprite Mode 被设成了 Multiple，却一张都没切</div>
+    <p style="margin:10px 0 0">
+      <code>按钮.png</code>、<code>位图备份 2.png</code>、<code>ima1.png</code> 三张图的导入设置是
+      <b>Sprite Mode = Multiple（多精灵）</b>，但 <code>spriteSheet.sprites</code> 是空的 ——
+      <b>这张贴图因此不会生成任何 Sprite</b>。没有 Sprite，自然在哪儿都选不到、换不上：
+      <code>Image</code> 组件的 <code>Source Image</code> 里挑不出来、<code>Resources.Load&lt;Sprite&gt;()</code> 也返回 null。
+    </p>
+  </div>
+
+  <h2>为什么会变成这样</h2>
+  <p>三个文件的 <code>.meta</code> 都在 <b>9-19 15:35</b> 被重写过：</p>
+  <table>
+    <tr><th>文件</th><th>meta 写入时间</th><th>线索</th></tr>
+    <tr><td><code>按钮.png.meta</code></td><td>15:35:14</td><td rowspan="2">两个文件<b>同一秒</b>被写 → 典型是「Project 里多选后一起点 Apply」，Sprite Mode 被连带改成了 Multiple</td></tr>
+    <tr><td><code>位图备份 2.png.meta</code></td><td>15:35:14</td></tr>
+    <tr><td><code>ima1.png.meta</code></td><td>15:35:49</td><td>6 分钟后单独一次</td></tr>
+  </table>
+  <p class="dim" style="font-size:13.5px">
+    那段时间<b>全工程只有这 3 个文件被改动</b>（不是批量重导入）。我 9-19 11:09 做的贴图瘦身脚本没碰过它们 ——
+    我的备份目录里根本没有这 3 个 <code>.meta</code>。
+  </p>
+
+  <h2>为什么「Multiple」会让图用不了</h2>
+  <table>
+    <tr><th>Sprite Mode</th><th>结果</th><th>能不能当精灵用</th></tr>
+    <tr>
+      <td><b>Single</b>（单张）</td>
+      <td>主资源就是一张 Sprite，fileID 固定 <code>21300000</code></td>
+      <td class="good">✅ 能。工程里被预制体引用的精灵全是这个模式</td>
+    </tr>
+    <tr>
+      <td><b>Multiple</b>（多精灵/图集）</td>
+      <td>精灵变成<b>子资源</b>，每个切片一个随机 hash fileID</td>
+      <td class="bad">⚠ 切了才有；<b>一张没切 = 一张都没有</b></td>
+    </tr>
+  </table>
+  <div class="note">
+    顺带一个容易踩的连带坑：把一张已经用着的图从 Single 改成 Multiple，<b>它原来的引用
+    <code>{fileID: 21300000, guid: …}</code> 会立刻断掉</b>（fileID 变了），界面上直接空白。
+    这次没造成损失，因为这 3 张图在工程里是 <b>0 引用</b>。
+  </div>
+
+  <h2>截图底部那条警告是什么</h2>
+  <pre>Only textures with width/height being multiple of 4 can be compressed to DXT5/BC3 format</pre>
+  <p>
+    这是<b>压缩格式</b>的警告，<b>跟精灵能不能用无关</b>。任何一维不是 4 的倍数时，
+    Unity 无法用 DXT5/BC3（基于 4×4 块的压缩），会静默退回未压缩格式 —— 只影响包体，不影响显示。
+  </p>
+  <table>
+    <tr><th>贴图</th><th>像素</th><th>是否 4 的倍数</th></tr>
+    <tr><td><code>按钮.png</code></td><td>217 × 75</td><td class="bad">都不是</td></tr>
+    <tr><td><code>ima1.png</code></td><td>330 × 118</td><td class="bad">都不是</td></tr>
+    <tr><td><code>位图备份 2.png</code></td><td>64 × 64</td><td class="good">是（无此警告）</td></tr>
+    <tr><td><code>领取按钮.png</code></td><td>952 × 211</td><td class="warn">高不是</td></tr>
+  </table>
+  <p class="dim" style="font-size:13.5px">
+    修法是把 PNG 补边到 4 的倍数。这几张都很小（合计 &lt;200KB），收益 &lt;100KB，<b>没有动你的图片</b>。
+    需要的话说一声，我把它们补成 220×76 / 332×120 这类尺寸。
+  </p>
+
+  <div class="hr"></div>
+
+  <h2>已经做了什么</h2>
+  <table>
+    <tr><th>#</th><th>动作</th><th>结果</th></tr>
+    <tr>
+      <td>1</td>
+      <td>直接改 <code>.meta</code>：<code>spriteMode: 2 → 1</code> + 补上规范 <code>spriteID</code></td>
+      <td><code>按钮.png</code> <span class="good">成功</span>；另两个 <span class="bad">6 秒后被 Unity 写回</span>（19:29:09）</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>新增 <code>Assets/MyAssets/Editor/RopeSpriteModeFix.cs</code>，改走 Unity 内部 API</td>
+      <td><span class="good">已就绪</span>，等编辑器重编译后自动跑一次</td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td>备份 3 个 <code>.meta</code> 原件</td>
+      <td><code>_RopeSpriteFix_Backup_20260920_192903\</code></td>
+    </tr>
+  </table>
+
+  <h3>步骤 1 暴露的一个更重要的结论</h3>
+  <div class="k">
+    <b>外部改 <code>.meta</code> 会被开着的 Unity 写回。</b>
+    <p style="margin:8px 0 0">
+      脚本这边断言、复验全部通过、报「成功」，<b>6 秒后 Unity 把 2 个文件还原成原值</b> ——
+      因为编辑器内存里那份 importer 设置还是 Multiple，它一刷新就写回磁盘。
+      这意味着<b>「脚本报成功」不等于「改动生效」</b>。
+    </p>
+    <p style="margin:8px 0 0">
+      所以贴图导入设置以后一律走 <b>Editor 脚本 + <code>TextureImporter</code> + <code>SaveAndReimport()</code></b>，
+      让 Unity 自己写自己存 —— 和之前修场景文本用的是同一个思路。
+    </p>
+  </div>
+
+  <h3>修复脚本做了什么</h3>
+  <ul>
+    <li>只认这 3 个路径，<b>不碰全工程</b>；</li>
+    <li>只有当 <code>spriteImportMode == Multiple</code> <b>且</b> <code>spritesheet.Length == 0</code> 时才改成 Single；
+      已经切过片的真图集一律跳过（只警告，不动）；</li>
+    <li>只改精灵模式，<b>尺寸/压缩/最大尺寸等设置原样保留</b>；</li>
+    <li><code>[InitializeOnLoad]</code> + <code>EditorPrefs</code> 只自动跑一次，
+      另有菜单 <code>Tools ▸ 打个毛线 ▸ 修复精灵模式（Multiple→Single）</code> 和
+      <code>检查精灵模式状态</code>；</li>
+    <li>每步独立 <code>try/catch</code>，单个失败不影响其它；API 名称与括号配平已核对通过。</li>
+  </ul>
+
+  <h2>你要做的</h2>
+  <div class="k">
+    <p style="margin:0"><b>切回 Unity 窗口即可。</b>它会检测到新脚本 → 重编译 → 自动修好那 3 张图的精灵模式。</p>
+    <p style="margin:10px 0 0">Console 搜 <code>[精灵模式]</code>，应该看到：</p>
+    <pre style="margin:8px 0 0">[精灵模式] Assets/AdSDK/Resources/按钮.png  Multiple -> Single 完成（原本 0 个切片，生不出精灵）。
+[精灵模式] Assets/AdSDK/Resources/位图备份 2.png  Multiple -> Single 完成（原本 0 个切片，生不出精灵）。
+[精灵模式] Assets/AdSDK/Resources/ima1.png  Multiple -> Single 完成（原本 0 个切片，生不出精灵）。
+[精灵模式] 全部完成，共修改 3 个贴图（自动）。</pre>
+    <p style="margin:10px 0 0" class="dim">
+      没动静就按 <code>Ctrl+R</code>，或手动跑 <code>Tools ▸ 打个毛线 ▸ 修复精灵模式（Multiple→Single）</code>。
+      之后在 Inspector 里这几张图的 <b>Sprite Mode 应该显示 Single</b>，也就能在 Image 里选到了。
+    </p>
+  </div>
+
+  <p>
+    <b>如果你本来就是要把它切成多张精灵（图集）：</b>Multipe 才是对的，但必须在
+    <code>Open Sprite Editor</code> 里 <code>Slice</code> → <code>Apply</code> 才算数；
+    光把模式改成 Multiple 而不切，就是"一张都没有"的状态。告诉我你要切几宫格，我直接给你配好。
+  </p>
+
+  <div class="hr"></div>
+
+  <h2>顺带查清的两件事（都没动）</h2>
+
+  <h3>1. 那张 <code>sactx-…-BG-…png</code> 是正常的，别去改</h3>
+  <p>
+    工程里共 4 张「Multiple 且 0 切片」的图，除了上面 3 张，还有
+    <code>MyAssets/Sprites/sactx-0-2048x2048-ASTC 6x6-BG-387c7cea.png</code>。
+    它是<b>图集烘焙页</b>，被 <code>Gradient_white.asset</code> / <code>Light.asset</code> 这两个
+    「从图集抽出来的独立 Sprite」用 <code>fileID: 2800000</code>（Texture2D）引用 ——
+    <b>Multiple 且没有切片正是它应有的样子</b>，不要一起"修"。
+  </p>
+
+  <h3>2. 一个需要你拍板的取舍：两张巨型精灵表被降了尺寸</h3>
+  <table>
+    <tr><th>贴图</th><th>源尺寸</th><th>瘦身前 maxSize</th><th>现在 maxSize</th><th>现在导入约</th><th>DXT5 约</th></tr>
+    <tr><td><code>512 (1).png</code>（60 切片）</td><td>3584×4608</td><td>2048</td><td class="warn">1024</td><td>796×1024</td><td>0.78 MB</td></tr>
+    <tr><td><code>WinEmoji.png</code>（49 切片）</td><td>3584×5120</td><td>2048</td><td class="warn">1024</td><td>717×1024</td><td>0.70 MB</td></tr>
+  </table>
+  <ul>
+    <li>9-19 那次瘦身把这两张从 2048 收到 1024，<b>省了约 4.6 MB</b>（是 13.2MB 里的一块大头）；</li>
+    <li>两张都被 <code>Gameplay.unity</code> 直接引用（各 2 处 / 1 处）；</li>
+    <li><b>不会切错位</b> —— 切片矩形存的是源像素坐标（最大边界 3558×4574 / 3563×5091），
+        改 <code>maxTextureSize</code> 时 Unity 按比例同步换算，只是分辨率掉到约 1/3.5；</li>
+    <li>代价是<b>肉眼会变软</b>。回 2048 只需改 meta 后重新导入，包体 +约 4.6 MB
+        （≈23MB → ≈28MB，仍在 30MB 以内）。</li>
+  </ul>
+  <p>建议：<b>先真机上看一眼这两张图出现在哪个界面</b>（WinEmoji 多半是过关表情）——
+    如果糊得看得出来，就往回升到 2048；不觉得糊就保持现状。</p>
+
+  <div class="hr"></div>
+
+  <h2>回滚点</h2>
+  <ul>
+    <li><code>…\Unity6000_打个毛线_Rope\_RopeSpriteFix_Backup_20260920_192903\</code> —— 3 个 <code>.meta</code> 原件（本次）</li>
+    <li><code>…\_RopeMeta_Backup_20260919_110951\</code> —— 82 个 .meta（瘦身前）</li>
+    <li><code>…\_RopeFont_Backup_20260919_111034\</code> —— 2 个字体原件</li>
+    <li><code>…\_RopeScene_Backup_20260919_110241\Gameplay.unity</code> —— 未损坏原始场景，<b>别删</b></li>
+  </ul>
+  <p class="dim" style="font-size:13.5px">
+    本次没有改动任何 PNG / 字体 / 场景 / 脚本逻辑，只动了 1 个贴图的精灵模式 + 新增 1 个 Editor 脚本，
+    对包体和玩法没有影响。
+  </p>
+
+</div>
+</body>
+</html>

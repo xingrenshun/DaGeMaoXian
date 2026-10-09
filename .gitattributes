@@ -1,0 +1,36 @@
+# 统一按二进制处理，避免 Git 误做文本换行转换而损坏资源
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.gif  binary
+*.tga  binary
+*.psd  binary
+*.bmp  binary
+*.ico  binary
+*.ttf  binary
+*.otf  binary
+*.ttc  binary
+*.wav  binary
+*.mp3  binary
+*.ogg  binary
+*.aif  binary
+*.aiff binary
+*.unitypackage binary
+*.dll  binary
+*.so   binary
+*.a    binary
+*.aar  binary
+*.jar  binary
+*.br   binary
+*.bin  binary
+
+# Unity 资源与场景：文本文件，但保持原样不做换行转换
+*.unity    -text
+*.prefab   -text
+*.asset    -text
+*.mat      -text
+*.meta     -text
+*.controller -text
+*.anim     -text
+*.json     -text
+*.txt      -text

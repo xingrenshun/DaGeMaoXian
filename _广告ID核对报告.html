@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>广告 ID 核对报告 · 宥如极速冒险</title>
+<style>
+  :root{
+    --bg:#0f1115; --card:#171a21; --card2:#1c2029; --line:#262b36;
+    --fg:#e6e9ef; --fg2:#9aa4b2; --fg3:#6b7482;
+    --red:#ff6b6b; --redbg:#2a1a1d;
+    --grn:#3ddc97; --grnbg:#12261f;
+    --yel:#f5c451; --yelbg:#2a2418;
+    --blu:#6ba8ff; --blubg:#151e2e;
+    --mono:"Cascadia Code","Consolas","SF Mono",Menlo,monospace;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; padding:40px 24px 80px;
+    background:var(--bg); color:var(--fg);
+    font:15px/1.75 -apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:960px;margin:0 auto}
+  h1{font-size:26px;margin:0 0 6px;letter-spacing:.3px}
+  h2{font-size:19px;margin:40px 0 14px;padding-left:11px;border-left:3px solid var(--blu)}
+  h3{font-size:15.5px;margin:24px 0 10px}
+  .sub{color:var(--fg3);font-size:13.5px;margin-bottom:26px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:18px 20px;margin:16px 0}
+  .card.warn{background:var(--yelbg);border-color:#4a3d1c}
+  .card.bad{background:var(--redbg);border-color:#4a2225}
+  .card.good{background:var(--grnbg);border-color:#1d4436}
+  code,kbd{font-family:var(--mono);font-size:13px;background:#0b0d11;border:1px solid var(--line);border-radius:4px;padding:1px 5px;color:#d7dbe4}
+  pre{font-family:var(--mono);font-size:12.5px;background:#0b0d11;border:1px solid var(--line);border-radius:8px;padding:14px 16px;overflow-x:auto;line-height:1.6;color:#c9cfda;margin:12px 0}
+  table{width:100%;border-collapse:collapse;margin:14px 0;font-size:14px}
+  th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{color:var(--fg2);font-weight:600;font-size:12.5px;letter-spacing:.4px;background:#14171d}
+  tr:last-child td{border-bottom:none}
+  .mono{font-family:var(--mono);font-size:12.5px}
+  .ok{color:var(--grn);font-weight:600}
+  .no{color:var(--red);font-weight:600}
+  .mid{color:var(--yel);font-weight:600}
+  .tag{display:inline-block;font-size:11.5px;padding:2px 8px;border-radius:20px;border:1px solid;line-height:1.6}
+  .tag.ok{color:var(--grn);border-color:#1d4436;background:var(--grnbg)}
+  .tag.no{color:var(--red);border-color:#4a2225;background:var(--redbg)}
+  .tag.mid{color:var(--yel);border-color:#4a3d1c;background:var(--yelbg)}
+  ul{padding-left:22px;margin:10px 0}
+  li{margin:5px 0}
+  .kpi{display:flex;gap:12px;flex-wrap:wrap;margin:18px 0}
+  .kpi div{flex:1;min-width:170px;background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+  .kpi b{display:block;font-size:12px;color:var(--fg3);font-weight:600;letter-spacing:.4px;margin-bottom:6px}
+  .kpi span{font-family:var(--mono);font-size:13.5px;word-break:break-all}
+  .foot{margin-top:44px;padding-top:16px;border-top:1px solid var(--line);color:var(--fg3);font-size:12.5px}
+  .char{font-family:var(--mono);font-size:12.5px;letter-spacing:2px}
+  .hl{background:#2a2418;border-bottom:1px dashed var(--yel);padding:0 3px;border-radius:2px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>广告 ID 核对报告</h1>
+<div class="sub">工程：宥如极速冒险（打个毛线 Rope） · Unity 6000.2.15f1 · 抖音小游戏 &nbsp;|&nbsp; 核对时间：2026-09-22 19:07</div>
+
+<div class="kpi">
+  <div><b>构建 APPID（我核对的）</b><span>tt8474f2c91a0fb1c002</span></div>
+  <div><b>激励视频广告位</b><span>1s1dq6mujcl21i3b0o</span></div>
+  <div><b>插屏广告位</b><span>1p205m3edko373l8g6</span></div>
+</div>
+
+<h2>结论</h2>
+
+<div class="card good">
+  <b class="ok">✓ 你给的三个 ID 格式与字符全部正确</b>
+  <ul style="margin-bottom:0">
+    <li>appid <code>tt8474f2c91a0fb1c002</code> 与 <code>StarkBuilderSetting.asset</code> 的 <code>_appId</code> <b>逐字一致</b>（这才是真正决定产物归属、写进 <code>project.config.json</code> 的那个）。</li>
+    <li>两个广告位 ID 与 <code>main.unity</code> 场景里 AdManager 组件填的值 <b>逐字一致</b>，长度都是 18 位，无多余空格。</li>
+  </ul>
+</div>
+
+<div class="card bad">
+  <b class="no">✗ 但发现两处「配了却不生效」的不一致，已修好</b>
+  <ol style="margin-bottom:0">
+    <li><b><code>TikTokAdBootstrap.cs</code> 里的三个兜底常量还全是旧值</b>（旧 appid + 旧广告位）——已改成新值。</li>
+    <li><b><code>main.unity</code> 场景 AdManager 的 <code>AppId</code> 字段是空的</b>——由上面的常量在运行时补齐（现已补对）。</li>
+  </ol>
+</div>
+
+<h2>逐项核对明细</h2>
+
+<table>
+<thead><tr><th style="width:31%">配置位置</th><th style="width:15%">角色</th><th>AppId</th><th>激励视频</th><th>插屏</th></tr></thead>
+<tbody>
+<tr>
+  <td><code>Assets/Editor/<br>StarkBuilderSetting.asset</code><br><span style="color:var(--fg3);font-size:12px">→ project.config.json</span></td>
+  <td><span class="tag mid">构建归属</span></td>
+  <td class="mono ok">tt8474f2c91a0fb1c002</td>
+  <td style="color:var(--fg3)">—</td>
+  <td style="color:var(--fg3)">—</td>
+</tr>
+<tr>
+  <td><code>Assets/MyAssets/Scene/<br>main.unity</code> ▸ <code>adManager</code> 对象</td>
+  <td><span class="tag ok">运行时权威</span></td>
+  <td class="mono mid">（空 → 由自举补）</td>
+  <td class="mono ok">1s1dq6mujcl21i3b0o</td>
+  <td class="mono ok">1p205m3edko373l8g6</td>
+</tr>
+<tr>
+  <td><code>Assets/AdSDK/Scripts/<br>TikTokAdBootstrap.cs</code></td>
+  <td><span class="tag mid">兜底</span></td>
+  <td class="mono ok">tt8474f2c91a0fb1c002 <span style="color:var(--grn);font-size:11px">已修</span></td>
+  <td class="mono ok">1s1dq6mujcl21i3b0o <span style="color:var(--grn);font-size:11px">已修</span></td>
+  <td class="mono ok">1p205m3edko373l8g6 <span style="color:var(--grn);font-size:11px">已修</span></td>
+</tr>
+<tr>
+  <td><code>Assets/AdSDK/Scripts/<br>TikTokPlatform.cs</code></td>
+  <td><span class="tag mid">末级兜底</span></td>
+  <td class="mono">取 <code>TikTokAdBootstrap.AppId</code></td>
+  <td style="color:var(--fg3)">—</td>
+  <td style="color:var(--fg3)">—</td>
+</tr>
+</tbody>
+</table>
+
+<div class="card warn">
+  <b class="mid">⚠ 上一次构建产物（18:46）里嵌的还是旧值</b>
+  <p style="margin:8px 0 0">在 <code>tt-minigame/webgl/Build/webgl.data</code> 里能直接搜到旧字符串
+  <code>tt9bb6ed0b05ce27b002</code>、<code>3hdbhgb64i2642k0j6</code>、<code>76srha9mdks28qhemc</code>；
+  而新的两组 ID 一个都搜不到。<b>必须重新构建</b>才会生效。</p>
+</div>
+
+<h2>为什么会有三个 appid 入口</h2>
+
+<p>这是本次核对的真正难点——工程里有 <b>两套互不相通的 appid 配置</b>，很容易改一个忘一个：</p>
+
+<pre>构建 appid ── StarkBuilderSetting.asset ▸ _appId        ← 决定产物归属哪个小游戏
+                                                          （进 project.config.json / game.js）
+
+广告 appid ── main.unity ▸ AdManager.AppId（空）
+                     ↓ 由自举补齐（AfterSceneLoad）
+               TikTokAdBootstrap.AppId                    ← 决定埋点 / 上报记到哪个小游戏名下
+                     ↓ 末级兜底
+               TikTokPlatform 构造函数</pre>
+
+<p>你之前给我的 <code>tt9bb6ed0b05ce27b002</code> 是<b>旧的广告 appid</b>，和构建 appid 不是同一个应用。
+这次统一成 <code>tt8474f2c91a0fb1c002</code> 后，两套入口终于指向同一个应用。</p>
+
+<h2>本次改动</h2>
+
+<h3>1. <code>Assets/AdSDK/Scripts/TikTokAdBootstrap.cs</code></h3>
+<table>
+<thead><tr><th>常量</th><th>改前</th><th>改后</th></tr></thead>
+<tbody>
+<tr><td class="mono">AppId</td><td class="mono no">tt9bb6ed0b05ce27b002</td><td class="mono ok">tt8474f2c91a0fb1c002</td></tr>
+<tr><td class="mono">VideoAdIds[0]</td><td class="mono no">3hdbhgb64i2642k0j6</td><td class="mono ok">1s1dq6mujcl21i3b0o</td></tr>
+<tr><td class="mono">InterAdIds[0]</td><td class="mono no">76srha9mdks28qhemc</td><td class="mono ok">1p205m3edko373l8g6</td></tr>
+</tbody>
+</table>
+<p style="color:var(--fg2);font-size:13.5px;margin-top:6px">改这一个文件就能让 appid 全线正确：因为场景里的 <code>AppId</code> 是空的，运行时正是从这里补进去；
+并且当场景里没有 AdManager（比如直接跑 Gameplay 场景调试）时，兜底配置也是这份。</p>
+
+<h3>2. <code>Assets/MyAssets/Editor/RopeTTSDKBuildFix.cs</code> — 新增 AppId 一致性校验</h3>
+<p>在构建前钩子 <code>RopeBuildPreflight</code> 里加了一段核对：把
+<code>StarkBuilderSetting._appId</code> 与 <code>TikTokAdBootstrap.AppId</code> 对比，<b>不一致直接报红</b>，
+并把两个值都打出来。以后再出现「改了一个忘另一个」，构建时就会当场发现，不用等跑起来报 1002 才回头查。</p>
+<pre>AppId 不一致！
+    StarkBuilderSetting._appId（构建/上传归属） = tt8474f2c91a0fb1c002
+    TikTokAdBootstrap.AppId（广告埋点/上报）  = xxxxxxxx
+    → 请把两者改成同一个 tt 开头的 appid，否则广告可能被判为不属于本应用而返回 1002。</pre>
+
+<h2>没有改动的部分（说明）</h2>
+<ul>
+  <li><b>没有动 <code>main.unity</code></b>。场景里 AdManager 的 <code>AppId</code> 字段留空，
+      运行时由自举在 <code>AfterSceneLoad</code> 补齐（时机早于 <code>AdManager.Start()</code>，平台创建时已是正确值）。
+      好处：不用碰场景 YAML，零风险。<br>
+      <span style="color:var(--fg2);font-size:13px">如果你希望在 Inspector 里也能直接看到这个值，
+      把 <code>tt8474f2c91a0fb1c002</code> 粘进 <code>main</code> 场景 ▸ <code>adManager</code> 对象 ▸ AdManager ▸ AppId 即可，不填也不影响运行。</span></li>
+  <li><b>广告位 ID 一个字都没动</b>——你填在场景里的两个值本来就是对的。</li>
+</ul>
+
+<h2>字符级核对（防 l / 1 混淆）</h2>
+<div class="card">
+  <p style="margin:0 0 10px;color:var(--fg2);font-size:13.5px">
+  抖音广告位 ID 里的 <span class="hl">小写字母 l</span> 和 <span class="hl">数字 1</span> 在多数等宽/无衬线字体下几乎同形。
+  我把两个 ID 逐字符拆开给你看：</p>
+  <div class="char">1 s 1 d q 6 m u j c <b style="color:var(--yel)">l</b> 2 1 i 3 b 0 o &nbsp;&nbsp;<span style="color:var(--fg3)">← 激励，第 11 位是小写 L</span></div>
+  <div class="char" style="margin-top:6px">1 p 2 0 5 m 3 e d k o 3 7 3 <b style="color:var(--yel)">l</b> 8 g 6 &nbsp;&nbsp;<span style="color:var(--fg3)">← 插屏，第 14 位是小写 L</span></div>
+  <p style="margin:12px 0 0;color:var(--fg2);font-size:13.5px">
+  顺带说明：我上次从截图里把插屏 ID 读成了 <code>1p205m3edko37318g6</code>（把 <code>l8</code> 看成了 <code>18</code>），
+  所以当时在工程里搜不到、误判成"跑的是旧包"。这次以你的文本消息为准做了逐字比对，两者完全一致。
+  建议在抖音后台复制粘贴一次，做最终确认。</p>
+</div>
+
+<h2>下一步</h2>
+<ol>
+  <li>切回 Unity，等编译转圈结束（本次改了两个 <code>.cs</code>）；</li>
+  <li><b>重新构建</b>——上次的包是旧 ID，不重构不会有任何变化；</li>
+  <li>构建日志里会出现 <code>[TTSDK构建修复] AppId 核对通过：tt8474f2c91a0fb1c002</code>；</li>
+  <li>真机上点激励视频，观察 Console 是否出现 <code>The AdUnitId is invalid</code>。
+      <span style="color:var(--fg2)">（开发者工具广告填充率很低，容易误判，务必真机验证。）</span></li>
+</ol>
+
+<div class="foot">
+  改动原件备份：<code>_RopeAdIdVerify_Backup_20260922_190645\</code>（TikTokAdBootstrap.cs / main.unity）<br>
+  本报告由 WorkBuddy 生成 · 宥如极速冒险（打个毛线 Rope）
+</div>
+
+</div>
+</body>
+</html>

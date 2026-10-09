@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>main 场景「开始游戏」按钮 接入报告</title>
+<style>
+  :root{
+    --bg:#f6f7f9; --card:#ffffff; --ink:#1c2024; --dim:#5b6672; --line:#e3e7ec;
+    --brand:#2f6fed; --ok:#0f9d58; --warn:#e8a33d; --bad:#d93025; --code:#f2f4f7;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;padding:32px 20px 64px;background:var(--bg);color:var(--ink);
+       font:15px/1.75 -apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft YaHei",sans-serif;}
+  .wrap{max-width:960px;margin:0 auto}
+  h1{font-size:26px;margin:0 0 6px;letter-spacing:-.2px}
+  .sub{color:var(--dim);font-size:14px;margin-bottom:28px}
+  h2{font-size:18px;margin:36px 0 14px;padding-left:11px;border-left:4px solid var(--brand)}
+  h3{font-size:15px;margin:22px 0 8px;color:#2b3238}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:18px 20px;margin:14px 0}
+  table{width:100%;border-collapse:collapse;font-size:14px;margin:10px 0}
+  th,td{padding:9px 11px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+  th{background:#f0f3f7;font-weight:600;font-size:13px;color:#39424d}
+  tr:last-child td{border-bottom:none}
+  code{background:var(--code);padding:1.5px 6px;border-radius:4px;font-size:13px;
+       font-family:"Cascadia Mono",Consolas,monospace}
+  pre{background:#1f2429;color:#dfe6ee;padding:14px 16px;border-radius:8px;overflow-x:auto;
+      font-size:13px;line-height:1.6;font-family:"Cascadia Mono",Consolas,monospace}
+  pre .c{color:#7d8794}
+  pre .k{color:#ffb86c}
+  pre .s{color:#8be9a8}
+  .tag{display:inline-block;font-size:12px;padding:2px 8px;border-radius:20px;
+       font-weight:600;line-height:1.6}
+  .t-new{background:#e6f0ff;color:#2f6fed}
+  .t-mod{background:#fff3dd;color:#a8710f}
+  .t-ok{background:#e3f5e9;color:#0f7a45}
+  .t-risk{background:#fdeceb;color:#b3271e}
+  ul{margin:8px 0;padding-left:22px}
+  li{margin:5px 0}
+  .kw{color:var(--brand);font-weight:600}
+  .flow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:16px 0;font-size:14px}
+  .box{background:#fff;border:1.5px solid var(--line);border-radius:8px;padding:9px 15px;text-align:center}
+  .box.on{border-color:var(--brand);background:#eef4ff;font-weight:600}
+  .arw{color:var(--dim);font-weight:700}
+  .note{background:#fffbf0;border-left:4px solid var(--warn);padding:12px 16px;border-radius:0 8px 8px 0;margin:14px 0;font-size:14px}
+  .good{background:#f2fbf5;border-left:4px solid var(--ok);padding:12px 16px;border-radius:0 8px 8px 0;margin:14px 0;font-size:14px}
+  .bad{background:#fef5f4;border-left:4px solid var(--bad);padding:12px 16px;border-radius:0 8px 8px 0;margin:14px 0;font-size:14px}
+  footer{margin-top:44px;padding-top:16px;border-top:1px solid var(--line);color:var(--dim);font-size:13px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>main 场景「开始游戏」按钮 接入报告</h1>
+  <div class="sub">工程：Unity6000_打个毛线_Rope &nbsp;·&nbsp; 2026-09-19 &nbsp;·&nbsp; Unity 6000.2.15f1 / 抖音小游戏</div>
+
+  <div class="card">
+    <h3 style="margin-top:0">一句话结论</h3>
+    <p style="margin:0">
+      <code>main.unity</code> 里那个 <code>paly</code> 按钮原本 <span class="kw">OnClick 完全是空的</span>（0 条绑定），
+      而且按钮文字「开始游戏」用的是内置 Arial（<span class="kw">没有汉字字形，所以字是看不见的</span>）。
+      现已把它接成 <span class="kw">点击 → 进入主场景 Gameplay</span>，并把 <code>main</code> 登记为启动场景（Build 索引 0）；
+      同时关掉了背景的点击接收，保证整屏只有这个按钮能触发。
+    </p>
+  </div>
+
+  <h2>1. 期望流程</h2>
+  <div class="flow">
+    <div class="box on">main.unity<br><span style="font-size:12px;color:#5b6672">标题页</span></div>
+    <div class="arw">──点击「开始游戏」──▶</div>
+    <div class="box on">Gameplay.unity<br><span style="font-size:12px;color:#5b6672">主场景（玩法）</span></div>
+    <div class="arw">──商店──▶</div>
+    <div class="box">CoinShop.unity<br><span style="font-size:12px;color:#5b6672">金币商店</span></div>
+  </div>
+  <p style="margin:4px 0;color:#5b6672;font-size:14px">点背景、点面板、点其它地方都<b>不会有任何反应</b>；只有按钮生效。</p>
+
+  <h2>2. 改了哪些文件</h2>
+  <table>
+    <thead><tr><th style="width:36%">文件</th><th style="width:12%">类型</th><th>说明</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><code>Assets/MyAssets/Scripts/MainMenuController.cs</code></td>
+        <td><span class="tag t-new">新增</span></td>
+        <td>标题页控制器。<code>StartGame()</code> 进入 Gameplay；带运行时兜底：只要 main 被加载就检查按钮绑定，没绑定就自动接上，并防连点。</td>
+      </tr>
+      <tr>
+        <td><code>Assets/MyAssets/Editor/MainSceneSetup.cs</code></td>
+        <td><span class="tag t-new">新增</span></td>
+        <td>编辑器工具。<b>用 Unity API 改场景</b>（不手写 YAML）：登记 Build 顺序、给 Canvas 挂控制器、把 <code>paly</code> 的 OnClick 指向 <code>StartGame</code>、换中文字体、关背景 Raycast。切回 Unity 自动执行一次，也可手动跑菜单。</td>
+      </tr>
+      <tr>
+        <td><code>Assets/MyAssets/Scripts/GameManager.cs</code></td>
+        <td><span class="tag t-mod">修改</span></td>
+        <td>把写死的 <code>LoadScene(0)</code> 全部改成按<b>场景名</b>加载，并给 <code>OpenScene(int)</code> 加了「序号→场景名」映射。</td>
+      </tr>
+      <tr>
+        <td><code>Assets/MyAssets/Scripts/IAPShopManager.cs</code></td>
+        <td><span class="tag t-mod">修改</span></td>
+        <td>商店「主页」按钮不再按索引跳（索引语义已变），改为按场景名跳 main；并对 <code>AudioManager</code>/<code>AdsManager</code> 加了空判断防 NRE。</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="note">
+    <b>刻意没有手改 <code>main.unity</code> 的 YAML。</b>
+    上次中文化就是因为用脚本直接改场景 YAML、把 <code>m_Font</code> 的缩进写错层级，导致 Unity 反序列化失败、16 个 Text 组件被重置。
+    这次改成让 Unity 自己改自己存，从根上避开这类问题。
+  </div>
+
+  <h2>3. 三个必须一起处理的连带问题</h2>
+
+  <h3>3.1 main 必须是启动场景，但写死的 <code>LoadScene(0)</code> 会全部错位</h3>
+  <p>原本 Build 顺序是 Gameplay(0) → CoinShop(1)，代码里一堆地方直接写 <code>SceneManager.LoadScene(0)</code>。
+     一旦 main 插到索引 0，这些调用全部会跳到标题页——最明显的就是<b>「下一关」会直接跳回菜单</b>。</p>
+  <table>
+    <thead><tr><th style="width:30%">原调用</th><th style="width:26%">语义</th><th>改成</th></tr></thead>
+    <tbody>
+      <tr><td><code>Next()</code> → <code>LoadScene(0)</code></td><td>下一关</td><td><code>LoadScene("Gameplay")</code></td></tr>
+      <tr><td>调试键 M / B → <code>LoadScene(0)</code></td><td>跳关 / 退关</td><td><code>LoadScene("Gameplay")</code></td></tr>
+      <tr><td><code>ResetGame()</code> → <code>LoadScene(0)</code></td><td>「更多关卡」面板的「主页」</td><td><code>LoadScene("main")</code></td></tr>
+      <tr><td><code>OpenScene(0)</code> / <code>OpenScene(1)</code></td><td>重开本关 / 打开商店</td><td>按 <code>openSceneNames</code> 映射为场景名</td></tr>
+      <tr><td><code>IAPShopManager.Home(0)</code></td><td>商店「主页」</td><td><code>LoadScene("main")</code></td></tr>
+    </tbody>
+  </table>
+  <p>改完之后场景跳转<b>与 Build Settings 顺序解耦</b>，以后再调整顺序也不会跳错。</p>
+
+  <h3>3.2 按钮文字看不见</h3>
+  <p>按钮的 <code>Text (Legacy)</code> 引用的是内置 <code>Arial</code>（<code>fileID: 10102</code>），Arial 没有汉字字形，
+     所以 <code>m_Text</code> 里虽然是「开始游戏」，屏幕上却是空白。工具会把它换成
+     <code>DroidSansFallback.ttf</code>（<code>guid 4b55cb2d…</code>，和 Gameplay/CoinShop 用的是同一个），
+     已确认该字体子集里「开始游戏」四个字全部命中。</p>
+
+  <h3>3.3 「只有点按钮才生效」</h3>
+  <p>标题页的 <code>/Canvas/Panel</code> 和 <code>/Canvas/Panel/bg</code> 是铺满全屏的 Image，
+     本来 <code>Raycast Target</code> 是开的。工具会把它们的 Raycast Target 关掉，
+     这样整屏只有按钮能接收点击，其它位置点下去没有任何反应。</p>
+  <div class="good" style="margin-bottom:0">
+    <code>/Canvas/Panel/cebianIcon</code>（侧边栏图标）<b>刻意没动</b>——它以后多半要挂「打开抖音侧边栏」的按钮，
+    现在把 Raycast 关掉会挡住后路。
+  </div>
+
+  <h2>4. 双保险机制</h2>
+  <table>
+    <thead><tr><th style="width:24%">层级</th><th>作用</th></tr></thead>
+    <tbody>
+      <tr><td><b>编辑器层</b><br><span style="font-size:12px;color:#5b6672">MainSceneSetup</span></td>
+          <td>把 <code>StartGame</code> 正式写进按钮的 OnClick（Inspector 里看得见、可改），登记 Build 顺序，换字体，关 Raycast。</td></tr>
+      <tr><td><b>运行时层</b><br><span style="font-size:12px;color:#5b6672">MainMenuController</span></td>
+          <td><code>[RuntimeInitializeOnLoadMethod]</code> 兜底：main 场景一加载就检查按钮有没有绑定，没有就自动接上。
+              即使 OnClick 被误清空，按钮依然能用（已做幂等判断，不会和 Inspector 的绑定重复触发）。</td></tr>
+    </tbody>
+  </table>
+
+  <h2>5. 验证步骤</h2>
+  <ol style="padding-left:22px">
+    <li>切回 Unity 窗口 → 等编译完成（会自动执行一次设置）。</li>
+    <li>Console 搜 <code>[主菜单]</code>，应看到类似：
+      <pre>[主菜单] 已在 /Canvas 上挂载 MainMenuController
+[主菜单] 已把 /Canvas/Panel/paly 的 OnClick 指向 StartGame
+[主菜单] 字体 /Canvas/Panel/paly/Text (Legacy) : Arial -> DroidSansFallback
+[主菜单] 关闭 Raycast Target: /Canvas/Panel
+[主菜单] 关闭 Raycast Target: /Canvas/Panel/bg
+[主菜单] main 场景设置完成，共修改 5 处（自动）</pre>
+      没动静就按 <code>Ctrl+R</code>，或手动执行菜单
+      <code>Tools ▸ 打个毛线 ▸ 设置开始场景并接好「开始游戏」按钮</code>。
+    </li>
+    <li>菜单 <code>Tools ▸ 打个毛线 ▸ 检查 main 场景状态</code>，确认 Build 顺序为
+        <code>[0] main</code> / <code>[1] Gameplay</code> / <code>[2] CoinShop</code>，按钮持久绑定数 = 1，字体 = DroidSansFallback。</li>
+    <li>打开 <code>main.unity</code> 进 Play：点「开始游戏」→ 应进入 Gameplay 并显示「第 N 关」；点背景/空白处 → 无反应。</li>
+  </ol>
+
+  <div class="bad">
+    <b>在设置跑完之前，不要在编辑器里手动保存 <code>main.unity</code></b>，
+    也不要手改它的按钮文案——会和自动设置抢同一份数据。
+  </div>
+
+  <h2>6. 我做的一个判断，你可能想改</h2>
+  <table>
+    <thead><tr><th style="width:30%">项目</th><th style="width:30%">现在</th><th>如果你想要别的</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>商店「主页」按钮去哪</td>
+        <td>回标题页 <code>main</code></td>
+        <td>改成 <code>Assets/MyAssets/Scripts/IAPShopManager.cs</code> 里
+            <code>LoadScene(MainSceneName)</code> → <code>LoadScene(GameplaySceneName)</code>（回游戏主页）</td>
+      </tr>
+      <tr>
+        <td>「更多关卡 敬请期待」的「主页」</td>
+        <td>回标题页 <code>main</code> + 清档</td>
+        <td><code>GameManager.ResetGame()</code> 里换成 <code>LoadScene(GameplaySceneName)</code></td>
+      </tr>
+      <tr>
+        <td>启动场景</td>
+        <td><code>main</code> = Build 索引 0</td>
+        <td>不想要标题页做启动页，就把 Build Settings 里 <code>Gameplay</code> 拖到第一位——代码已与顺序解耦，不会跳错</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>7. 顺带发现（没动，供你决定）</h2>
+  <ul>
+    <li><b>main 场景的 CanvasScaler 是 <code>ConstantPixelSize</code>（UiScaleMode = 0，ScaleFactor = 1）。</b>
+        按钮固定 257×172 像素，在高分屏手机上会显得偏小。想按屏幕自适应，建议改成
+        <code>Scale With Screen Size</code> + 参考分辨率（例如 1080×1920）。</li>
+    <li><b><code>/Canvas/Panel/cebianIcon</code> 没有 Button 组件</b>，目前只是个纯图标。
+        如果打算做抖音侧边栏入口，需要自己加 Button 并调 <code>AdsManager.ShowSidebar()</code>。</li>
+    <li><code>GameManager</code> 里仍有 <code>P</code> 重置存档、<code>M</code> 跳 20 关、<code>B</code> 退关、<code>R</code> 重开等调试键，
+        正式包建议去掉或加 <code>#if UNITY_EDITOR</code>。</li>
+  </ul>
+
+  <h2>8. 回滚</h2>
+  <p>本次<b>没有改动任何 <code>.unity</code> / <code>.meta</code> / 字体文件</b>，场景改动由编辑器工具完成、可逆：</p>
+  <ul>
+    <li>场景层面：在 main 场景里删掉 Canvas 上的 <code>MainMenuController</code>、清空 <code>paly</code> 的 OnClick 即可复原；</li>
+    <li>Build 顺序：Project Settings ▸ Scenes In Build 里把 Gameplay 拖回第一位；</li>
+    <li>代码层面：<code>GameManager.cs</code> / <code>IAPShopManager.cs</code> 的改动都是「索引 → 场景名」的等价替换，改回 <code>LoadScene(0)</code> 即恢复原状；</li>
+    <li>新增的两个 <code>.cs</code> 直接删除不影响其它功能（Editor 工具删掉后场景设置就停在那次执行的结果上）。</li>
+  </ul>
+
+  <footer>
+    生成于 2026-09-19 · 相关文件：<code>_main场景按钮修复报告.html</code><br>
+    配套：<code>_包体瘦身报告.html</code>、<code>_场景文本修复报告.html</code>
+  </footer>
+
+</div>
+</body>
+</html>

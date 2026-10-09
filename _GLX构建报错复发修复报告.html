@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GLX 构建报错复发排查报告 · 宥如极速冒险</title>
+<style>
+  :root{
+    --bg:#0f1115; --card:#171a21; --card2:#1c2029; --line:#262b36;
+    --fg:#e6e9ef; --fg2:#9aa4b2; --fg3:#6b7482;
+    --red:#ff6b6b; --redbg:#2a1a1d;
+    --grn:#3ddc97; --grnbg:#12261f;
+    --yel:#f5c451; --yelbg:#2a2418;
+    --blu:#6ba8ff; --blubg:#151e2e;
+    --mono:"Cascadia Code","Consolas","SF Mono",Menlo,monospace;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; padding:40px 24px 80px;
+    background:var(--bg); color:var(--fg);
+    font:15px/1.75 -apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:940px;margin:0 auto}
+  h1{font-size:26px;margin:0 0 6px;letter-spacing:.3px}
+  .sub{color:var(--fg3);font-size:13.5px;margin-bottom:26px}
+  .badges{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 30px}
+  .badge{
+    font-size:12.5px;padding:5px 12px;border-radius:999px;font-weight:600;
+    background:var(--grnbg);color:var(--grn);border:1px solid #1e4636;
+  }
+  .badge.b2{background:var(--redbg);color:var(--red);border-color:#4a2429}
+  .badge.b3{background:var(--blubg);color:var(--blu);border-color:#22344f}
+  .badge.b4{background:var(--yelbg);color:var(--yel);border-color:#4a3f22}
+  h2{
+    font-size:18px;margin:38px 0 14px;padding-bottom:9px;
+    border-bottom:1px solid var(--line);
+  }
+  h3{font-size:15px;margin:24px 0 10px;color:var(--fg)}
+  .card{
+    background:var(--card);border:1px solid var(--line);border-radius:10px;
+    padding:18px 20px;margin:14px 0;
+  }
+  .card.warn{background:var(--redbg);border-color:#4a2429}
+  .card.ok{background:var(--grnbg);border-color:#1e4636}
+  .card.info{background:var(--blubg);border-color:#22344f}
+  .card.note{background:var(--yelbg);border-color:#4a3f22}
+  pre{
+    background:#0b0d11;border:1px solid var(--line);border-radius:8px;
+    padding:14px 16px;overflow-x:auto;margin:12px 0;
+    font:12.8px/1.7 var(--mono);color:#c8d0dc;
+  }
+  pre .r{color:var(--red)}
+  pre .g{color:var(--grn)}
+  pre .y{color:var(--yel)}
+  pre .d{color:var(--fg3)}
+  code{
+    background:#0b0d11;border:1px solid var(--line);border-radius:4px;
+    padding:1px 6px;font:12.8px var(--mono);color:#c8d0dc;
+  }
+  table{width:100%;border-collapse:collapse;margin:14px 0;font-size:13.5px}
+  th,td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+  th{background:var(--card2);color:var(--fg2);font-weight:600;font-size:12.5px;letter-spacing:.4px}
+  tr:last-child td{border-bottom:none}
+  td.k{color:var(--fg2);white-space:nowrap}
+  .pill{
+    display:inline-block;font-size:11.5px;padding:2px 8px;border-radius:5px;
+    font-weight:600;white-space:nowrap;
+  }
+  .pill.ok{background:var(--grnbg);color:var(--grn)}
+  .pill.bad{background:var(--redbg);color:var(--red)}
+  .pill.mid{background:var(--yelbg);color:var(--yel)}
+  ol,ul{padding-left:22px;margin:12px 0}
+  li{margin:6px 0}
+  .step{
+    display:flex;gap:14px;align-items:flex-start;
+    padding:14px 0;border-bottom:1px solid var(--line);
+  }
+  .step:last-child{border-bottom:none}
+  .num{
+    flex:none;width:26px;height:26px;border-radius:50%;
+    background:var(--blubg);color:var(--blu);border:1px solid #22344f;
+    display:flex;align-items:center;justify-content:center;
+    font-size:13px;font-weight:700;
+  }
+  .step .t{font-weight:600;margin-bottom:3px}
+  .step .d{color:var(--fg2);font-size:13.5px}
+  .small{font-size:12.8px;color:var(--fg3)}
+  hr{border:none;border-top:1px solid var(--line);margin:34px 0}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>GLX 构建报错复发排查报告</h1>
+  <div class="sub">宥如极速冒险（打个毛线 Rope）· Unity 6000.2.15f1 · TTSDK 6.9.4 · 2026-09-22</div>
+
+  <div class="badges">
+    <span class="badge">根因已定位</span>
+    <span class="badge b3">已加四层守卫</span>
+    <span class="badge b4">无需手动改设置</span>
+  </div>
+
+  <div class="card warn">
+    <b>一句话结论</b><br>
+    不是「设置没改对」。是 <b>TTSDK 工具窗口在每次点构建时，都会把自己内存里的设置重新落盘一遍</b>，
+    这一步把 <code>enableEmscriptenGlx</code> 从 <code>0</code> 带回了 <code>1</code> —— 时间点正好夹在
+    「我们的校验之后、构建读取之前」。所以光靠改一次文件，第二天再构建必然复发。
+  </div>
+
+  <h2>一、报错原文</h2>
+
+  <pre><span class="r">exception occurred during BuildPlayer: Failed to activate emscripten glx</span>
+<span class="r">Exception: Failed to activate emscripten glx</span>
+  TTSDKBase.Tool.BuildPlatformWebGL.InitializeBeforeBuildPlayer
+  → TTSDKBase.Tool.NativePluginManager.ProcessEmscriptenGlxLib
+
+<span class="d">伴随三条把候选库逐个禁掉的消息：</span>
+Disable EmscriptenGLX importer path: .../WebGL/libemscriptenglx_3_1_39.a
+Disable EmscriptenGLX importer path: .../WebGL/libemscriptenglx.a
+Disable EmscriptenGLX importer path: .../WebGL/libemscriptenglx_2021.a
+<span class="y">EmscriptenGLX plugin not supported for current Unity version</span></pre>
+
+  <h2>二、根因：谁把 0 改回了 1</h2>
+
+  <p>Unity 的 <code>Editor.log</code> 把整条时间线记得清清楚楚：</p>
+
+  <pre><span class="d">16:12:46</span>  <span class="r">Failed to activate emscripten glx</span>   <span class="d">← 第一次失败</span>
+<span class="d">16:13:05</span>  Start importing Assets/Editor/StarkBuilderSetting.asset ...
+<span class="d">16:13:05</span>  <span class="g">build begin</span>, workspace: ...\tt-minigame
+<span class="d">16:13:06</span>  Disable EmscriptenGLX importer path: ...libemscriptenglx_3_1_39.a
+<span class="d">16:13:06</span>  Disable EmscriptenGLX importer path: ...libemscriptenglx.a
+<span class="d">16:13:06</span>  Disable EmscriptenGLX importer path: ...libemscriptenglx_2021.a
+<span class="d">16:13:06</span>  <span class="y">EmscriptenGLX plugin not supported for current Unity version</span>
+<span class="d">16:13:06</span>  <span class="r">Exception: Failed to activate emscripten glx</span></pre>
+
+  <p>关键就在这两行的<b>相邻</b>关系：<code>Start importing</code> 紧贴 <code>build begin</code>。
+  这说明是<b>构建流程自己</b>先把设置写回磁盘（把 GLX 带成 1），紧接着才开始构建。</p>
+
+  <table>
+    <tr><th>环节</th><th>发生的事</th><th>结果</th></tr>
+    <tr>
+      <td class="k">1</td>
+      <td>Unity 启动 / 域重载，<code>AutoFix</code> 跑</td>
+      <td><span class="pill ok">读到 0，正确</span><br><span class="small">日志第 82 行「已是正确值，无需改动」</span></td>
+    </tr>
+    <tr>
+      <td class="k">2</td>
+      <td>用户点「构建」，TTSDK 工具把内存设置落盘</td>
+      <td><span class="pill bad">写成 1</span><br><span class="small">就是 16:13:05 那条 Start importing</span></td>
+    </tr>
+    <tr>
+      <td class="k">3</td>
+      <td>构建读设置，进入 GLX 分支</td>
+      <td><span class="pill bad">三个库全不匹配 → 全禁用</span></td>
+    </tr>
+    <tr>
+      <td class="k">4</td>
+      <td>没有可用库，工具不降级、直接抛异常</td>
+      <td><span class="pill bad">构建中断，连包体都不产出</span></td>
+    </tr>
+  </table>
+
+  <div class="card info">
+    <b>为什么工具会写回 1？</b><br>
+    翻遍 <code>ttsdk_tools.dll</code> 与 <code>com.bytedance.ttsdk.base-editor.dll</code> 的界面字面量，
+    <b>工具窗口里根本没有暴露 GLX 的勾选框</b> —— 这个字段由 TTSDK 内部逻辑自己维护，
+    界面上改不了、也看不到。所以只能从代码层拦截，没法靠手动关掉。
+  </div>
+
+  <h2>三、修复方案：四层守卫</h2>
+
+  <p>既然它每次构建都要写回，那就<b>在它写入的每一个时机把它压回去</b>。
+  全部改动集中在 <code>Assets/MyAssets/Editor/RopeTTSDKBuildFix.cs</code>：</p>
+
+  <table>
+    <tr><th>层级</th><th>时机</th><th>实现</th><th>作用</th></tr>
+    <tr>
+      <td class="k">L1</td>
+      <td>编辑器启动 / 域重载</td>
+      <td><code>RopeTTSDKBuildFix.AutoFix</code></td>
+      <td>把文件纠正成 <code>enableEmscriptenGlx=0</code></td>
+    </tr>
+    <tr>
+      <td class="k">L2</td>
+      <td>asset 保存<b>之前</b></td>
+      <td><code>RopeTTSDKSettingsSaveGuard<br>.OnWillSaveAssets</code></td>
+      <td><b>新增</b>·落盘前一刻改成 0，写进文件的就是 0</td>
+    </tr>
+    <tr>
+      <td class="k">L3</td>
+      <td>asset 导入<b>之后</b></td>
+      <td><code>RopeTTSDKSettingsGuard<br>.OnPostprocessAllAssets</code></td>
+      <td><b>新增</b>·关键一层：把 TTSDK 即将读取的<b>内存实例</b>改回 0</td>
+    </tr>
+    <tr>
+      <td class="k">L4</td>
+      <td>编辑器每秒</td>
+      <td><code>RopeTTSDKBuildFix.Watch</code></td>
+      <td><b>新增</b>·兜底：万一前两层没拦住，一秒内压回</td>
+    </tr>
+    <tr>
+      <td class="k">L5</td>
+      <td>构建开始前</td>
+      <td><code>RopeBuildPreflight</code></td>
+      <td>原有·继续兜住 WebGL 模板，防「No WebGL template selected!」</td>
+    </tr>
+  </table>
+
+  <div class="card ok">
+    <b>L3 为什么是关键</b><br>
+    工具构建时调用的是 <code>StarkSDKToolWindow:BuildByNewTool(StarkBuilderSettings settings)</code> ——
+    <b>直接把内存里的那个实例传进构建</b>。所以在 asset 刚落盘的那一刻改这个内存实例，
+    它接下来读到的就是 <code>0</code>，压根不会走进 GLX 分支。
+    <br><br>
+    <span class="small">实现细节：用反射改字段（不用 SerializedObject，避免导入流程中重入）；
+    此层刻意<b>不</b>调 <code>SaveAssets</code>，落盘交给 <code>delayCall</code> 延后处理。</span>
+  </div>
+
+  <h2>四、你需要做的</h2>
+
+  <div class="card">
+    <div class="step">
+      <div class="num">1</div>
+      <div>
+        <div class="t">切回 Unity，等右下角编译转圈结束</div>
+        <div class="d">脚本已改好，Unity 检测到后会自动重编译。编译完守卫就生效了。</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="num">2</div>
+      <div>
+        <div class="t">直接点构建，不用改任何设置</div>
+        <div class="d">这次不需要你去工具窗口取消勾选——那里本来就没有这个选项。</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="num">3</div>
+      <div>
+        <div class="t">（可选）核对一下</div>
+        <div class="d">菜单 <code>Tools ▸ 打个毛线 ▸ 检查 TTSDK 构建设置</code>，
+        Console 会列出 <code>enableEmscriptenGlx = 0 [OK]</code>。</div>
+      </div>
+    </div>
+  </div>
+
+  <h3>成功的标志</h3>
+  <ul>
+    <li>构建日志里<b>不再出现</b> <code>Disable EmscriptenGLX importer path</code>；</li>
+    <li>Console 里可能看到 <code>[TTSDK构建修复] 保存前拦截…</code> 或 <code>拦截到…改回了 1</code>
+        —— 这不是报错，是守卫正在干活的证据；</li>
+    <li>构建能一路走到 <code>Total compressed size x.x MB</code> 并产出包体。</li>
+  </ul>
+
+  <h2>五、为什么关掉 GLX 没有副作用</h2>
+
+  <div class="card note">
+    GLX（Emscripten GLX）是 WebGL 平台的一个<b>可选</b>渲染加速方案，属于锦上添花。
+    TTSDK 6.9.4 只随包提供两版预编译静态库 —— 对应 Unity 2021 与 Unity 2022
+    （emscripten 3.1.39）；<b>Unity 6000.2 没有任何匹配的库</b>。
+    工具的设计缺陷是：匹配不到就全禁用然后抛异常，而不是优雅降级。
+    关掉它不影响玩法、不影响上架，只是少了一个可选优化。
+  </div>
+
+  <hr>
+
+  <div class="small">
+    <b>涉及文件</b><br>
+    改动 · <code>Assets/MyAssets/Editor/RopeTTSDKBuildFix.cs</code>（新增 L2/L3/L4 三层守卫 + 文档）<br>
+    改动 · <code>Assets/Editor/StarkBuilderSetting.asset</code>（<code>enableEmscriptenGlx: 1 → 0</code>）<br>
+    备份 · <code>_RopeGlxGuard_Backup_20260922_161543\StarkBuilderSetting.asset</code><br>
+    存档 · <code>_RopeGlx_Backup_20260921_103834\StarkBuilderSetting.asset</code>（上一轮）
+  </div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,18 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1045 &1
+EditorBuildSettings:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Scenes:
+  - enabled: 1
+    path: Assets/MyAssets/Scene/main.unity
+    guid: c7db082e248d30d4b8b9087b8712ab0c
+  - enabled: 1
+    path: Assets/MyAssets/Scene/Gameplay.unity
+    guid: a7efcff855c850c48a8ee8365d4dfa8a
+  - enabled: 1
+    path: Assets/MyAssets/Scene/CoinShop.unity
+    guid: ed97f15daeaf1a64f92085de488caa8e
+  m_configObjects: {}
+  m_UseUCBPForAssetBundles: 0

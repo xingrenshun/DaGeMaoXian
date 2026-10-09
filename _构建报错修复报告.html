@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TTSDK 构建报错修复报告 · 宥如极速冒险</title>
+<style>
+  :root{
+    --bg:#0f1115; --card:#171a21; --card2:#1c2029; --line:#262b36;
+    --fg:#e6e9ef; --fg2:#9aa4b2; --fg3:#6b7482;
+    --red:#ff6b6b; --redbg:#2a1a1d;
+    --grn:#3ddc97; --grnbg:#12261f;
+    --yel:#f5c451; --yelbg:#2a2418;
+    --blu:#6ba8ff; --blubg:#151e2e;
+    --mono:"Cascadia Code","Consolas","SF Mono",Menlo,monospace;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; padding:40px 24px 80px;
+    background:var(--bg); color:var(--fg);
+    font:15px/1.75 -apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:940px;margin:0 auto}
+  h1{font-size:26px;margin:0 0 6px;letter-spacing:.3px}
+  .sub{color:var(--fg3);font-size:13.5px;margin-bottom:26px}
+  .badges{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 30px}
+  .badge{
+    font-size:12.5px;padding:5px 12px;border-radius:999px;font-weight:600;
+    background:var(--grnbg);color:var(--grn);border:1px solid #1e4636;
+  }
+  .badge.b2{background:var(--blubg);color:var(--blu);border-color:#22364f}
+  .badge.b3{background:var(--yelbg);color:var(--yel);border-color:#4a3d1e}
+  h2{
+    font-size:17.5px;margin:38px 0 14px;padding-left:11px;
+    border-left:3px solid var(--blu);letter-spacing:.2px;
+  }
+  h3{font-size:15px;margin:22px 0 8px;color:var(--fg)}
+  p{margin:10px 0}
+  .card{
+    background:var(--card);border:1px solid var(--line);border-radius:10px;
+    padding:18px 20px;margin:14px 0;
+  }
+  pre{
+    background:#0b0d11;border:1px solid var(--line);border-radius:8px;
+    padding:14px 16px;overflow-x:auto;margin:12px 0;
+    font-family:var(--mono);font-size:12.8px;line-height:1.62;color:#c9d3e0;
+  }
+  pre.red{border-color:#3a2126;background:#140f11}
+  pre.grn{border-color:#1c3a2e;background:#0d1613}
+  code{font-family:var(--mono);font-size:.92em;background:#20252f;padding:2px 6px;border-radius:4px;color:#d7e0ec}
+  table{width:100%;border-collapse:collapse;margin:14px 0;font-size:14px}
+  th,td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+  th{color:var(--fg2);font-weight:600;font-size:13px;background:#14171d}
+  td code{font-size:12.8px}
+  .old{color:var(--red);font-weight:600}
+  .new{color:var(--grn);font-weight:600}
+  .note{
+    border-left:3px solid var(--yel);background:var(--yelbg);
+    padding:12px 16px;border-radius:0 8px 8px 0;margin:14px 0;font-size:14px;
+  }
+  .warn{
+    border-left:3px solid var(--red);background:var(--redbg);
+    padding:12px 16px;border-radius:0 8px 8px 0;margin:14px 0;font-size:14px;
+  }
+  .ok{
+    border-left:3px solid var(--grn);background:var(--grnbg);
+    padding:12px 16px;border-radius:0 8px 8px 0;margin:14px 0;font-size:14px;
+  }
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:6px 0}
+  .step{display:flex;gap:14px;align-items:flex-start;margin:14px 0}
+  .step .n{
+    flex:0 0 26px;height:26px;border-radius:50%;background:var(--blu);color:#08101c;
+    font-weight:700;font-size:13.5px;display:flex;align-items:center;justify-content:center;margin-top:2px;
+  }
+  .foot{margin-top:44px;padding-top:18px;border-top:1px solid var(--line);color:var(--fg3);font-size:13px}
+  .kbd{font-family:var(--mono);font-size:12.5px;background:#20252f;border:1px solid #2e3540;border-bottom-width:2px;padding:2px 7px;border-radius:5px;color:#d7e0ec}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>TTSDK 构建报错修复报告</h1>
+  <div class="sub">宥如极速冒险（工程代号「打个毛线 Rope」）· Unity 6000.2.15f1 · TTSDK 6.9.4 · 2026-09-21</div>
+
+  <div class="badges">
+    <span class="badge">已定位根因</span>
+    <span class="badge b2">已完成修复</span>
+    <span class="badge b3">待你重开工具窗口复验</span>
+  </div>
+
+  <h2>一、报错现象</h2>
+
+  <p>点 TTSDK Unity 调试工具的构建按钮后，Console 依次输出：</p>
+
+<pre class="red">build begin, workspace: ...\Unity6000_打个毛线_Rope\tt-minigame
+Disable EmscriptenGLX importer path: ...\WebGL\libemscriptenglx_3_1_39.a
+Disable EmscriptenGLX importer path: ...\WebGL\libemscriptenglx.a
+Disable EmscriptenGLX importer path: ...\WebGL\libemscriptenglx_2021.a
+EmscriptenGLX plugin not supported for current Unity version
+exception occurred during BuildPlayer: Failed to activate emscripten glx
+build failed, see bellow logs for detail.</pre>
+
+  <p>Editor.log（<code>%LOCALAPPDATA%\Unity\Editor\Editor.log</code>）里给出了准确位置：</p>
+
+<pre>Exception: Failed to activate emscripten glx
+  at TTSDKBase.Tool.BuildPlatformWebGL.InitializeBeforeBuildPlayer (BuildContext) [0x00046]
+  at TTSDKBase.Tool.Builder.DoBuild (BuildContext, BuildStatus) [0x00120]
+
+  ← TTSDKBase.Tool.NativePluginManager:SetEmscriptenGlxCompatibility (IReadOnlyList&lt;PluginImporter&gt;, ...)
+  ← TTSDKBase.Tool.NativePluginManager:ProcessEmscriptenGlxLib (bool)</pre>
+
+  <div class="warn">
+    <b>构建中断在最前面，连包体都没产出</b> —— 失败发生在 <code>InitializeBeforeBuildPlayer</code>（构建前置准备阶段），
+    不是打包到一半失败，所以 <code>tt-minigame</code> 目录里不会有新产物。
+  </div>
+
+  <h2>二、根因</h2>
+
+  <h3>① GLX 没有匹配当前 Unity 版本的库（直接原因）</h3>
+
+  <p>TTSDK 只随包提供固定几版<b>预编译</b>的 GLX 静态库，按引擎版本二选一：</p>
+
+  <table>
+    <thead><tr><th>库文件</th><th>对应引擎版本</th></tr></thead>
+    <tbody>
+      <tr><td><code>libemscriptenglx_2021.a</code></td><td>Unity 2021</td></tr>
+      <tr><td><code>libemscriptenglx_3_1_39.a</code></td><td>Unity 2022 / emscripten 3.1.39</td></tr>
+      <tr><td><code>libemscriptenglx.a</code></td><td>默认档</td></tr>
+    </tbody>
+  </table>
+
+  <p><b>当前 Unity 版本（6000.2.15f1）不在这份名单里。</b>工具用
+  <code>GetEmscriptenGlxLibNameForCurrentVersion()</code> 按引擎版本挑库 → 一个都挑不中 →
+  逐个 <code>Disable</code> 掉全部候选 → <b>不做降级、直接抛异常</b>，构建就此中断。</p>
+
+  <div class="ok">
+    <b>GLX 是可选项，关掉是安全的。</b>它是 TTSDK 6.9.2 才上线的加速功能，且：
+    <ul style="margin-bottom:0">
+      <li><code>TTSDK.jslib</code> / <code>JSB.jslib</code> / <code>TTUNBridge.jslib</code> 里<b>没有任何 glx 硬引用</b>（已逐个查过）</li>
+      <li>模板 JS 里也是条件判断：<code>if (GL.isInGLXMode?.() &amp;&amp; !!Module['_glx_init'])</code>，库不在就自动跳过</li>
+      <li>关掉只是少一层字节的 GL 转发优化，<b>不影响玩法、不影响上架</b></li>
+    </ul>
+  </div>
+
+  <h3>② isWebGL2 = 0 与 Unity 6 冲突（紧随其后的第二个坑）</h3>
+
+  <p><b>Unity 6 起只支持 WebGL 2.0，WebGL 1 已被移除。</b>官方文档原文：</p>
+
+  <p style="margin-left:16px;color:var(--fg2);font-size:14px;font-style:italic">
+    "Unity no longer provides support for WebGL 1 in builds created with the Auto Graphics API option."
+  </p>
+
+  <p>而 TTSDK 会按 <code>StarkBuilderSetting.isWebGL2</code> 去覆盖 PlayerSettings 的 Graphics API。
+  设成 <code>0</code> 会让它把 WebGL 平台压回 <b>WebGL 1.0</b> —— 在 Unity 6 上不可能构建成功。</p>
+
+  <div class="note">
+    <b>这个坑和常见的「Incompatible color space」是两回事。</b>那条报错只在 <b>Linear</b> 色彩空间下出现；
+    本工程 <code>m_ActiveColorSpace: 0</code> 是 <b>Gamma</b>，所以永远看不到那条提示——
+    别因为没看到它，就以为 WebGL2 没问题。两项独立，都需要修。
+  </div>
+
+  <h2>三、修复内容</h2>
+
+  <p>改的文件：<code>Assets/Editor/StarkBuilderSetting.asset</code>（TTSDK 工具窗口读写的就是它）</p>
+
+  <table>
+    <thead><tr><th>字段</th><th>改前</th><th>改后</th><th>原因</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><code>enableEmscriptenGlx</code></td>
+        <td class="old">1</td><td class="new">0</td>
+        <td>Unity 6 没有匹配的 GLX 库，开着会让工具抛异常中断构建</td>
+      </tr>
+      <tr>
+        <td><code>isWebGL2</code></td>
+        <td class="old">0</td><td class="new">1</td>
+        <td>Unity 6 只支持 WebGL 2.0，不修会紧接着再失败一次</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p>另外新增一个兜底工具，把编辑器内存里的那份设置也钉成正确值
+  （工具窗口可能缓存旧值，点构建时读的是内存）：</p>
+
+  <p><code>Assets/MyAssets/Editor/RopeTTSDKBuildFix.cs</code></p>
+  <ul>
+    <li>切回 Unity 后<b>自动跑一次</b>，把上面两个字段写成 0 / 1</li>
+    <li>菜单手动入口：<span class="kbd">Tools</span> ▸ <span class="kbd">打个毛线</span> ▸ <span class="kbd">修复 TTSDK 构建设置（Unity 6）</span></li>
+    <li>另有 <span class="kbd">检查 TTSDK 构建设置</span> 可打印当前值并标出是否合规</li>
+    <li>日志标签 <code>[TTSDK构建修复]</code>，兼容 bool / int 两种字段类型，逐项 try/catch</li>
+  </ul>
+
+  <h2>四、你要做的事（1 步）</h2>
+
+  <div class="step">
+    <div class="n">1</div>
+    <div>
+      <b>切回 Unity → 等编译完 → <span class="kbd">关闭并重新打开 TTSDK 工具窗口</span> → 再点构建。</b><br>
+      <span style="color:var(--fg2)">必须重开窗口：工具窗口里那个「是否启用 EmscriptenGLX」复选框是它的内存值，
+      不重开可能仍按旧值（勾选状态）构建，等于没改。重开后复选框应变成<b>未勾选</b>。</span>
+    </div>
+  </div>
+
+  <p>构建前建议先在 Console 搜 <code>[TTSDK构建修复]</code>，正常会看到：</p>
+
+<pre class="grn">[TTSDK构建修复] 已修正 2 项设置（自动）
+[TTSDK构建修复] 现在可以回到 TTSDK 工具窗口重新点击构建。</pre>
+
+  <p>或者手动跑一次 <span class="kbd">Tools</span> ▸ <span class="kbd">打个毛线</span> ▸ <span class="kbd">检查 TTSDK 构建设置</span> 核对，应输出：</p>
+
+<pre class="grn">[TTSDK构建修复] ===== TTSDK 构建设置 =====
+[TTSDK构建修复]   enableEmscriptenGlx = 0  [OK]  (Unity 6 没有匹配的 GLX 库)
+[TTSDK构建修复]   isWebGL2 = 1  [OK]  (Unity 6 只支持 WebGL 2.0)</pre>
+
+  <h2>五、回滚方法</h2>
+
+  <p>备份在：<code>…\Unity6000_打个毛线_Rope\_RopeGlx_Backup_20260921_103834\StarkBuilderSetting.asset</code></p>
+
+  <p>覆盖回去即可恢复原状（两个字段都回 1 / 0）。
+  <b>但只有在 TTSDK 升级到带 Unity 6 GLX 库的版本后，回滚才有意义</b> ——
+  在当前 TTSDK 6.9.4 上恢复 <code>enableEmscriptenGlx: 1</code> 会重新触发这次的报错。</p>
+
+  <h2>六、顺带发现（与本次构建失败无关，未改动）</h2>
+
+  <table>
+    <thead><tr><th>发现</th><th>说明</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>Editor.log 每 10 秒刷一条<br><code>Fatal|WebSocket.connect:0|<br>An error has occurred during a TLS handshake.</code></td>
+        <td>Unity 编辑器自身的联网服务握手失败（本机装有 Clash 代理，代理链路常见诱因）。<b>不影响本次构建</b>，
+        但如果之后遇到 TTSDK 联网类功能异常，从这里入手排查。</td>
+      </tr>
+      <tr>
+        <td><code>stripEngineCode: 0</code><br><code>scriptingBackend: 0</code><br><code>isOldBuildFormat: 0</code></td>
+        <td>保持原样未动。它们与本次报错没有因果关系，<b>刻意不做无关改动</b>，
+        避免一次动多个变量导致后续问题难以定位。</td>
+      </tr>
+      <tr>
+        <td>GLX 库文件（3 个 <code>.a</code>）</td>
+        <td>保持禁用状态（<code>WebGL: enabled = 0</code>），不参与构建。不要删除、不要改名。</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="foot">
+    修复方式：磁盘改 <code>StarkBuilderSetting.asset</code>（已确认 Unity 重新导入了它）+ 新增 Editor 兜底脚本
+    （19 个 API 名称已在 <code>UnityEditor.CoreModule.dll</code> 等程序集里逐一核对存在，括号配平 32/32、81/81、3/3 通过）。<br>
+    本次<strong>未改动</strong>任何场景、贴图、字体、音频、关卡文件，之前的中文化与包体瘦身成果不受影响。
+  </div>
+
+</div>
+</body>
+</html>

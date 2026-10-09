@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>构建报错修复报告 · No WebGL template selected</title>
+<style>
+  :root{
+    --bg:#f6f7f9; --card:#ffffff; --ink:#1c1f23; --ink2:#4a5158; --ink3:#7c848c;
+    --line:#e3e6ea; --line2:#eef1f4;
+    --red:#c62828; --redbg:#fdecec; --green:#1b7f4b; --greenbg:#e8f6ee;
+    --amber:#a86400; --amberbg:#fdf3e2; --blue:#1f5fa8; --bluebg:#eaf2fb;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font:15px/1.75 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;}
+  .wrap{max-width:960px;margin:0 auto;padding:32px 22px 80px}
+  header{border-bottom:2px solid var(--ink);padding-bottom:16px;margin-bottom:26px}
+  h1{margin:0 0 8px;font-size:25px;letter-spacing:.2px}
+  .sub{color:var(--ink3);font-size:13.5px}
+  h2{font-size:18px;margin:34px 0 12px;padding-left:10px;border-left:4px solid var(--ink)}
+  h3{font-size:15.5px;margin:22px 0 8px;color:var(--ink2)}
+  p{margin:9px 0}
+  ul,ol{margin:9px 0 9px 22px;padding:0}
+  li{margin:5px 0}
+  code{font-family:"SFMono-Regular",Consolas,"Liberation Mono",monospace;font-size:13px;
+    background:#eceef1;padding:1px 5px;border-radius:4px;word-break:break-all}
+  pre{margin:12px 0;background:#1e2226;color:#e6e9ec;padding:14px 16px;border-radius:8px;
+    overflow-x:auto;font:12.5px/1.65 "SFMono-Regular",Consolas,monospace;white-space:pre}
+  pre .c{color:#8ba3b8}
+  pre .r{color:#ff8a80}
+  pre .g{color:#8ee29b}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:10px;
+    padding:18px 20px;margin:14px 0}
+  .verdict{background:var(--greenbg);border:1px solid #bfe3ce;border-left:4px solid var(--green)}
+  .warn{background:var(--amberbg);border:1px solid #f0dcb4;border-left:4px solid var(--amber)}
+  .danger{background:var(--redbg);border:1px solid #f2c5c5;border-left:4px solid var(--red)}
+  .info{background:var(--bluebg);border:1px solid #c5daf2;border-left:4px solid var(--blue)}
+  .tag{display:inline-block;font-size:11.5px;font-weight:600;padding:2px 8px;border-radius:20px;
+    vertical-align:2px;margin-right:6px}
+  .t-red{background:var(--redbg);color:var(--red)}
+  .t-green{background:var(--greenbg);color:var(--green)}
+  .t-blue{background:var(--bluebg);color:var(--blue)}
+  .t-gray{background:#eceef1;color:var(--ink2)}
+  table{width:100%;border-collapse:collapse;margin:12px 0;font-size:13.5px}
+  th,td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+  th{background:#f0f2f5;font-weight:600}
+  td.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+  .big{font-size:15px;font-weight:600}
+  .kpi{display:flex;gap:12px;flex-wrap:wrap;margin:12px 0}
+  .kpi div{flex:1 1 170px;background:var(--card);border:1px solid var(--line);
+    border-radius:9px;padding:12px 14px}
+  .kpi b{display:block;font-size:20px;margin-bottom:2px}
+  .kpi span{color:var(--ink3);font-size:12.5px}
+  .mono{font-family:Consolas,monospace;font-size:12.5px;color:var(--ink2)}
+  .step{background:var(--card);border:1px solid var(--line);border-radius:9px;padding:14px 18px;margin:10px 0}
+  .step b{color:var(--blue)}
+  footer{margin-top:44px;padding-top:16px;border-top:1px solid var(--line);
+    color:var(--ink3);font-size:12.5px}
+  .arrow{color:var(--ink3)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>构建报错修复报告</h1>
+  <div class="sub">
+    宥如极速冒险（工程：Unity6000_打个毛线_Rope）·
+    <code>No WebGL template selected!</code> ·
+    2026-09-21 10:48 · Unity 6000.2.15f1 + TTSDK 6.9.4
+  </div>
+</header>
+
+<div class="card verdict">
+  <p class="big">结论：Unity 自带的 WebGL 模板没被选中（<code>ProjectSettings.asset</code> 里 <code>webGLTemplate</code> 是空值）。
+  已补成 <code>APPLICATION:Default</code>，并加了一道构建前兜底，这类失败不会再发生。</p>
+  <p>好消息是：这次构建<strong>已经走了很远</strong>——上一轮的 GLX 报错确实修掉了，三个场景全都打包完成，
+  只在最后生成 <code>index.html</code> 那一步因为找不到模板而中止。</p>
+</div>
+
+<h2>1 · 报错原文与怎么读它</h2>
+
+<pre>Exception: No WebGL template selected! Select a template in player settings.
+  at UnityEditor.WebGL.WebGlBuildPostprocessor.UpdateHTMLTemplatePath ()
+  <span class="c">       ↑ /home/bokken/build/output/unity/unity/PlatformDependent/WebGL/...</span>
+  at UnityEditor.WebGL.WebGlBuildPostprocessor.PostProcess (BuildPostProcessArgs args)
+  at UnityEditor.Modules.BeeBuildPostprocessor.PostProcess (...)
+  at UnityEditor.PostprocessBuildPlayer.Postprocess (...)
+  at UnityEditor.BuildPipeline.BuildPlayerInternalNoCheck (...)
+  <span class="c">  ← TTSDK.Tool.BuilderWebGL.StarkBuildSettings.BuildPlayer (...)</span>
+  <span class="c">  ← TTSDK.Tool.StarkSDKToolWindow.&lt;BuildApk&gt;b__0 (bool)</span></pre>
+
+<div class="card info">
+  <p><span class="tag t-blue">读栈技巧</span>
+  栈里出现 <code>/home/bokken/build/output/unity/unity/...</code> —— 这是 <strong>Unity 自己的编译机源码路径</strong>。
+  出现它，就说明抛异常的是 <strong>Unity 内置的后处理</strong>，不是 TTSDK 的代码。</p>
+  <p>所以排查方向应该去 <strong>PlayerSettings / 模板</strong> 这类<strong>工程设置</strong>，
+  而不是翻 <code>com.bytedance.starksdk</code> 包。<span class="mono">（这次也是靠这一点避免走弯路。）</span></p>
+</div>
+
+<h2>2 · 意外收获：这是本工程第一次拿到真实进包数字</h2>
+
+<p>这条报错出现时，包体其实<strong>已经打好了</strong>。Editor.log 里它的上一行就是场景打包结果：</p>
+
+<pre>Level 0 'Assets/MyAssets/Scene/main.unity'     uses <span class="g">1.1 MB</span> compressed /  <span class="g">5.8 MB</span> uncompressed.
+Level 1 'Assets/MyAssets/Scene/Gameplay.unity' uses <span class="g">3.1 MB</span> compressed / <span class="g">21.6 MB</span> uncompressed.
+Level 2 'Assets/MyAssets/Scene/CoinShop.unity' uses <span class="g">0.7 MB</span> compressed /  <span class="g">3.2 MB</span> uncompressed.
+Total compressed size <span class="g">4.9 MB</span>. Total uncompressed size <span class="g">30.6 MB</span>.
+<span class="r">Exception: No WebGL template selected! ...</span></pre>
+
+<div class="kpi">
+  <div><b>30.6 MB</b><span>场景序列化数据（未压缩）</span></div>
+  <div><b>4.9 MB</b><span>同数据压缩后</span></div>
+  <div><b>21.6 MB</b><span>其中 Gameplay.unity 一个占的</span></div>
+</div>
+
+<p class="mono">
+印证了之前的结论：840 个关卡 JSON 是「场景序列化引用」（<code>LevelSpawner.levelsJson : List&lt;TextAsset&gt;</code>），
+不放在 <code>Resources</code> 下，而是<strong>跟着场景进包</strong>——所以 Gameplay 一个场景就 21.6MB。
+</p>
+
+<h2>3 · 根因</h2>
+
+<p><code>ProjectSettings/ProjectSettings.asset</code> 里这一行是<strong>空的</strong>：</p>
+
+<pre>  webGLTemplate:            <span class="r">← 空值，Unity 无从选择模板</span></pre>
+
+<p>正常应该长这样（二选一）：</p>
+
+<table>
+  <tr><th>取值</th><th>含义</th><th>模板位置</th></tr>
+  <tr>
+    <td><code>APPLICATION:Default</code></td>
+    <td>Unity 内置模板</td>
+    <td><code>Editor/Data/PlaybackEngines/WebGLSupport/BuildTools/WebGLTemplates/Base/&lt;名&gt;/</code></td>
+  </tr>
+  <tr>
+    <td><code>PROJECT:&lt;模板名&gt;</code></td>
+    <td>工程自定义模板</td>
+    <td><code>Assets/WebGLTemplates/&lt;模板名&gt;/</code></td>
+  </tr>
+</table>
+
+<h3>怎么确诊的：和本机 37 个同类工程做对照</h3>
+
+<p>与其猜该填什么，不如看别的工程怎么填。扫 <code>D:\Unity</code> 下所有工程的同一个字段：</p>
+
+<table>
+  <tr><th>webGLTemplate 取值</th><th class="n">工程数</th><th>说明</th></tr>
+  <tr><td><code>APPLICATION:Default</code></td><td class="n">31</td><td><strong>主流取值</strong></td></tr>
+  <tr><td><code>APPLICATION:Minimal</code></td><td class="n">1</td><td>行李箱排序工程</td></tr>
+  <tr><td><code>Builtin:Default</code></td><td class="n">1</td><td>WanZhuanFangKuai</td></tr>
+  <tr><td><code>PROJECT:EccentricGamePush</code></td><td class="n">1</td><td>律动小猫，它自带 <code>Assets/WebGLTemplates/EccentricGamePush/</code></td></tr>
+  <tr><td><code>(空)</code></td><td class="n">1</td><td><strong>← 本工程（就是问题所在）</strong></td></tr>
+  <tr><td><code>?</code>（字段缺失）</td><td class="n">2</td><td>老版本 Unity 写的工程</td></tr>
+</table>
+
+<p>本工程 <code>Assets/WebGLTemplates/</code> <strong>不存在</strong>，Unity 内置模板目录<strong>齐全</strong>，
+所以正确取值只有一个：<strong><code>APPLICATION:Default</code></strong>。</p>
+
+<h2>4 · 一个容易混淆的排除项</h2>
+
+<div class="card warn">
+  <p><span class="tag t-gray">已排除</span>
+  TTSDK 包里有个 <code>com.bytedance.starksdk/DefaultTemplate/</code> 目录，名字很像，但它<strong>不是 Unity 模板</strong>。
+  里面装的是小游戏的东西：<code>game.js</code> / <code>game.json</code> / <code>project.config.json</code> /
+  <code>backgroundportrait.png</code>…… 那是 TTSDK 用来生成 <code>tt-minigame</code> 输出包的，
+  和 <code>webGLTemplate</code> 完全无关。</p>
+  <p class="mono">Unity 的模板只认两个地方：内置 <code>WebGLTemplates\Base\*</code>，或工程内 <code>Assets/WebGLTemplates/&lt;名&gt;/</code>。</p>
+</div>
+
+<h2>5 · 做了哪三处修改</h2>
+
+<table>
+  <tr><th>#</th><th>改动</th><th>位置</th><th>作用</th></tr>
+  <tr>
+    <td>1</td>
+    <td><code>webGLTemplate: APPLICATION:Default</code></td>
+    <td><code>ProjectSettings/ProjectSettings.asset</code></td>
+    <td>直接补上，立刻生效</td>
+  </tr>
+  <tr>
+    <td>2</td>
+    <td><code>PlayerSettings.WebGL.template = "APPLICATION:Default"</code></td>
+    <td><code>Assets/MyAssets/Editor/RopeTTSDKBuildFix.cs</code></td>
+    <td>走 Unity API 的<strong>权威通道</strong>，避免被内存旧值写回</td>
+  </tr>
+  <tr>
+    <td>3</td>
+    <td><code>RopeBuildPreflight : IPreprocessBuildWithReport</code></td>
+    <td>同上文件内新增类</td>
+    <td><strong>构建前兜底</strong>：每次构建前自动校正模板</td>
+  </tr>
+</table>
+
+<h3>为什么兜底（第 3 条）才是关键</h3>
+
+<p>报错点在 <code>WebGlBuildPostprocessor.PostProcess</code>，它是在
+<code>BuildPipeline.BuildPlayer</code> <strong>内部</strong>才执行的——那时候再改设置已经来不及。</p>
+
+<p>而 <code>IPreprocessBuildWithReport.OnPreprocessBuild</code> 的时机正好在
+<em>BuildPlayer 启动之后、真正打包之前</em>。更巧的是，TTSDK 自己也会在构建前改一批 PlayerSettings：</p>
+
+<pre><span class="c">// 日志堆栈里可见：</span>
+TTSDK.Tool.Builder:SetupWebGLBuildSettings (StarkBuilderSettings, <span class="g">PlayerSettings</span>)
+TTSDK.Tool.Builder:BuildWebGL (...)
+TTSDK.Tool.StarkBuilder:Build (...)</pre>
+
+<p>它跑在 <code>BuildPlayer</code> <strong>之前</strong>；我们的 preflight 跑在 <strong>之后</strong>——
+<strong>所以最终生效的模板值是我们写的那一个。</strong>这个顺序正是这条兜底有效的原因。</p>
+
+<h2>6 · 顺带发现：TTSDK 会自己改 PlayerSettings</h2>
+
+<div class="card warn">
+  <p><span class="tag t-gray">结论修正</span>
+  之前我们记的是「<code>webGLCompressionFormat: 0</code> 是开的，别乱动」。
+  但现在磁盘上它已经是 <code>2</code> 了（9-19 读到 <code>0</code>，9-21 读到 <code>2</code>）。</p>
+  <p>原因就在上面那个 <code>SetupWebGLBuildSettings</code> —— <strong>它是 TTSDK 在构建时改的</strong>。
+  TTSDK 用 <code>StarkBuilderSetting.needCompress</code> / <code>compressMethod</code> 自己做压缩，
+  所以 Unity 这侧的值不用我们操心。</p>
+  <p><strong>新结论：这个字段归 TTSDK 管，不要手改。</strong>（既不要"以为没开压缩去打开"，也不要"以为开着重置成 Disabled"。）</p>
+</div>
+
+<h2>7 · 你要做的（1 步）</h2>
+
+<div class="step">
+  <p><b>切回 Unity 窗口</b>，等它编译完（检测到新脚本 → 域重载 → 自动校验一次设置），
+  然后回 TTSDK 工具窗口点构建。</p>
+  <p>Console 里搜 <code>[TTSDK构建修复]</code>，应该看到其中一种：</p>
+  <pre>[TTSDK构建修复] 已修正 1 项设置（自动）。现在可以回到 TTSDK 工具窗口重新点击构建。
+<span class="c">或</span>
+[TTSDK构建修复] 构建设置已是正确值，无需改动（自动）。</pre>
+  <p class="mono">没动静按 <code>Ctrl+R</code>；也可手动跑菜单
+  <code>Tools ▸ 打个毛线 ▸ 修复 TTSDK 构建设置（Unity 6）</code>，
+  另有 <code>检查 TTSDK 构建设置</code> 可以核对三个值的现状。</p>
+</div>
+
+<p>构建真正开始后，如果模板仍有问题，你会看到这条日志（说明兜底生效了）：</p>
+<pre>[TTSDK构建修复] 构建前已把 WebGL 模板由 "" 修正为 "APPLICATION:Default"</pre>
+
+<h2>8 · 校验记录</h2>
+
+<ul>
+  <li><strong>API 全部核对通过</strong>（在 Unity 自带 XML 文档里查成名的，不是凭记忆）：
+    <code>Editor/Data/Managed/UnityEditor.xml</code> 与
+    <code>Managed/UnityEngine/UnityEditor.CoreModule.xml</code> 中命中
+    <code>P:UnityEditor.PlayerSettings.WebGL.template</code>、
+    <code>M:UnityEditor.Build.IPreprocessBuildWithReport.OnPreprocessBuild(BuildReport)</code>、
+    <code>P:UnityEditor.Build.IOrderedCallback.callbackOrder</code>、
+    <code>P:UnityEditor.Build.Reporting.BuildSummary.platform</code>。</li>
+  <li><strong>设置复验</strong>：改完等待 6 秒复读，<code>webGLTemplate = "APPLICATION:Default"</code> 未被写回；
+    同批次的 <code>enableEmscriptenGlx = 0</code> / <code>isWebGL2 = 1</code> 也仍是正确值。</li>
+  <li><strong>未误伤</strong>：<code>webGLCompressionFormat</code> 改前改后都是 <code>2</code>；
+    <code>webGLLinkerTarget: 1</code> / <code>webGLDecompressionFallback: 0</code> / <code>webGLEmscriptenArgs</code> 均未改动。</li>
+  <li><strong>脚本自检</strong>：UTF-8 BOM 保留；括号配平 50/50、108/108、3/3；15 项关键要素全部命中；360 行。</li>
+  <li><strong>已实机跑通</strong>：切回 Unity 后它自动重编译并执行了修正脚本，Editor.log 里出现
+    <code>[TTSDK构建修复] 构建设置已是正确值，无需改动（自动）。</code>
+    —— 三项全部核对通过（旧版脚本的同一句日志结尾没有句号，这条带句号，说明跑的确实是新版代码）。</li>
+</ul>
+
+<div class="card info">
+  <p><span class="tag t-blue">别误判</span>
+  日志里紧跟在这条日志后面会出现一长串 <code>RopeTTSDKBuildFix:AutoFix ()</code>、
+  <code>UnityEditor.EditorApplication:Internal_CallDelayFunctions ()</code> 的堆栈，
+  看起来像报错，<strong>其实不是</strong>——那是 Unity 给 <code>Debug.Log</code> 附带的调用栈
+  （栈顶就是 <code>UnityEngine.Debug:Log (object)</code>），没有异常类型行。
+  环境光是无害的，不用管。</p>
+</div>
+
+<div class="card warn">
+  <p><span class="tag t-gray">顺带说明</span>
+  日志里还会看到 <code>Opening scene '.../Gameplay.unity additively'</code>，
+  那是之前那个 <code>RopeUITextRestore</code>（场景文本修复工具）在每次编译后自检场景文本——
+  它是<strong>幂等</strong>的：场景正常时只打开看一眼、不修改、不保存。属于预期行为。</p>
+</div>
+
+<h2>9 · 回滚点</h2>
+
+<table>
+  <tr><th>内容</th><th>路径</th></tr>
+  <tr>
+    <td>本次备份（补模板前）</td>
+    <td class="mono">…\Unity6000_打个毛线_Rope\_RopeTemplate_Backup_20260921_104800\ProjectSettings.asset</td>
+  </tr>
+  <tr>
+    <td>上一轮备份（改 GLX/WebGL2 前）</td>
+    <td class="mono">…\Unity6000_打个毛线_Rope\_RopeGlx_Backup_20260921_103834\StarkBuilderSetting.asset</td>
+  </tr>
+</table>
+
+<div class="card danger">
+  <p><strong>不建议回滚第一项</strong>：把 <code>webGLTemplate</code> 改回空值，就等于把这条报错原样还原。
+  只有在你想换成自定义模板（<code>Assets/WebGLTemplates/&lt;名&gt;/</code>）时才需要动它。</p>
+</div>
+
+<footer>
+  本次未改动任何场景、贴图、字体、音频、关卡文件，之前的中文化与包体瘦身成果不受影响。<br>
+  相关工具：<code>Assets/MyAssets/Editor/RopeTTSDKBuildFix.cs</code>（同时负责 GLX/WebGL2 开关 与 WebGL 模板）
+</footer>
+
+</div>
+</body>
+</html>

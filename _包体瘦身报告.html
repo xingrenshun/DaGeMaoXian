@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>打个毛线 Rope — 包体瘦身报告</title>
+<style>
+  :root{
+    --bg:#0e1116; --panel:#161b22; --panel2:#1c232c; --line:#2a323d;
+    --fg:#e6edf3; --dim:#8b949e; --accent:#4ade80; --warn:#fbbf24; --bad:#f87171; --blue:#60a5fa;
+    --mono:"Cascadia Mono",Consolas,"JetBrains Mono",monospace;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--fg);
+    font-family:-apple-system,"Segoe UI","Microsoft YaHei",sans-serif;font-size:15px;line-height:1.65}
+  .wrap{max-width:1180px;margin:0 auto;padding:40px 28px 80px}
+  h1{font-size:27px;margin:0 0 6px;letter-spacing:.3px}
+  .sub{color:var(--dim);font-size:13.5px;margin-bottom:32px}
+  h2{font-size:18px;margin:38px 0 14px;padding-left:11px;border-left:3px solid var(--blue)}
+  h2 .n{color:var(--dim);font-weight:400;font-size:14px}
+  p{margin:10px 0}
+  code{font-family:var(--mono);background:#20262e;padding:1.5px 6px;border-radius:4px;font-size:13px;color:#ffd479}
+
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(196px,1fr));gap:14px;margin:22px 0 8px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px 18px}
+  .card .k{color:var(--dim);font-size:12.5px;letter-spacing:.4px}
+  .card .v{font-family:var(--mono);font-size:23px;font-weight:600;margin-top:6px}
+  .card .d{font-size:12.5px;color:var(--accent);margin-top:3px;font-family:var(--mono)}
+  .g{color:var(--accent)} .r{color:var(--bad)} .y{color:var(--warn)} .b{color:var(--blue)}
+  .strike{color:var(--dim);text-decoration:line-through}
+
+  table{width:100%;border-collapse:collapse;margin:14px 0;font-size:13.5px}
+  th{background:var(--panel2);color:var(--dim);text-align:left;font-weight:600;
+     font-size:12.5px;letter-spacing:.3px;padding:9px 11px;border-bottom:1px solid var(--line);white-space:nowrap}
+  td{padding:8px 11px;border-bottom:1px solid #1f262e;vertical-align:middle}
+  tr:hover td{background:#1a212a}
+  td.num,th.num{font-family:var(--mono);text-align:right;white-space:nowrap}
+  td.path{font-family:var(--mono);font-size:12.5px;color:#c9d1d9;word-break:break-all}
+  tfoot td{background:var(--panel2);font-weight:600;border-top:1px solid var(--line);border-bottom:none}
+
+  .box{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px 20px;margin:16px 0}
+  .box.warn{border-color:#5a4718;background:#1e1a0f}
+  .box.ok{border-color:#1d4a2c;background:#0f1d14}
+  .box.risk{border-color:#5a2020;background:#1e0f0f}
+  .box h3{margin:0 0 8px;font-size:14.5px}
+  ul{margin:8px 0;padding-left:22px} li{margin:5px 0}
+  .tag{display:inline-block;font-size:11.5px;font-family:var(--mono);padding:1.5px 7px;border-radius:20px;
+       border:1px solid var(--line);color:var(--dim);margin-left:6px}
+  .tag.done{color:var(--accent);border-color:#1d4a2c;background:#0f1d14}
+  .tag.todo{color:var(--warn);border-color:#5a4718;background:#1e1a0f}
+  .tag.keep{color:var(--blue);border-color:#1d3557;background:#0f1722}
+  hr{border:none;border-top:1px solid var(--line);margin:34px 0}
+  .small{font-size:12.5px;color:var(--dim)}
+  .flex{display:flex;gap:16px;flex-wrap:wrap}
+  .flex>div{flex:1;min-width:280px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>打个毛线 Rope · 包体瘦身报告</h1>
+  <div class="sub">
+    工程 <code>Unity6000_打个毛线_Rope</code> · Unity 6000.2.15f1 · 目标平台 抖音小游戏（主包 30&nbsp;MB 上限）<br>
+    统计口径：仅计「会进入构建」的资源；<code>.meta</code>、<code>/Editor/</code>、GoogleMobileAds / MobileDependencyResolver 等编辑器专用内容已排除。
+  </div>
+
+  <div class="cards">
+    <div class="card">
+      <div class="k">优化前（估算打包体积）</div>
+      <div class="v strike">27.72 MB</div>
+      <div class="d" style="color:var(--dim)">纹理 21.83 / 音频 2.23 / 字体 3.65</div>
+    </div>
+    <div class="card">
+      <div class="k">优化后</div>
+      <div class="v g">14.52 MB</div>
+      <div class="d">纹理 13.09 / 音频 0.33 / 字体 1.10</div>
+    </div>
+    <div class="card">
+      <div class="k">净减少</div>
+      <div class="v g">-13.20 MB</div>
+      <div class="d">↓ 48%</div>
+    </div>
+    <div class="card">
+      <div class="k">预估上架包体</div>
+      <div class="v b">≈ 23 MB</div>
+      <div class="d" style="color:var(--dim)">⚠ 需实际构建确认</div>
+    </div>
+  </div>
+
+  <h2>一、预估上架包体构成 <span class="n">（优化后）</span></h2>
+  <table>
+    <thead><tr><th>内容</th><th class="num">裸大小</th><th class="num">构建压缩后</th><th>说明</th></tr></thead>
+    <tbody>
+      <tr><td>纹理（DXT5 + Crunch）</td><td class="num">13.09 MB</td><td class="num">≈ 12.5 MB</td><td class="small">已压缩数据，Brotli 几乎压不动</td></tr>
+      <tr><td>关卡 JSON ×849</td><td class="num">12.81 MB</td><td class="num">≈ 2.9 MB</td><td class="small">文本，Brotli 约 25%</td></tr>
+      <tr><td>字体（TTF/OTF/SDF）</td><td class="num">3.62 MB</td><td class="num">≈ 2.2 MB</td><td class="small">二进制，压缩率一般</td></tr>
+      <tr><td>中文 SDF 图集（TMP）</td><td class="num">≈ 2.0 MB</td><td class="num">≈ 1.2 MB</td><td class="small">2 页 1024² Alpha8</td></tr>
+      <tr><td>引擎 wasm + 托管代码</td><td class="num">≈ 4-6 MB</td><td class="num">≈ 3.5 MB</td><td class="small">Brotli 后</td></tr>
+      <tr><td>音频（Vorbis）</td><td class="num">0.33 MB</td><td class="num">≈ 0.33 MB</td><td class="small">已是压缩格式</td></tr>
+      <tr><td>场景 / 预制体 / 其他</td><td class="num">≈ 1.5 MB</td><td class="num">≈ 0.4 MB</td><td class="small">YAML 文本</td></tr>
+    </tbody>
+    <tfoot><tr><td>合计</td><td class="num">—</td><td class="num g">≈ 23 MB</td><td class="small">优化前约 34 MB（超限）</td></tr></tfoot>
+  </table>
+
+  <div class="box ok">
+    <h3>✅ 关键确认：构建压缩是开启的</h3>
+    <p class="small" style="margin:6px 0">
+      <code>ProjectSettings.asset</code> 中 <code>webGLCompressionFormat: 0</code>。对照 Unity 6000.2.15f1 自带的三个官方工程模板
+      （<code>2d-cross-platform</code> / <code>3d-cross-platform</code> / <code>3d-high-end</code>）默认值<strong>同样为 0</strong>，
+      即这是 Unity 6 的<strong>默认压缩档位</strong>（Brotli），而非 "Disabled"。所以关卡 JSON、字体、代码在构建时都会被压到 1/4 左右 ——
+      <strong>这也是本次能降到 23 MB 的前提，无需改动该设置。</strong>
+    </p>
+  </div>
+
+  <h2>二、纹理优化 <span class="n">21.83 MB → 13.09 MB（省 8.74 MB）</span></h2>
+  <p class="small">统一动作：关闭 Mipmap、<code>maxTextureSize</code> 收敛到 1024、开启 Crunch 压缩。
+     <strong>背景图例外</strong>保留 2048 以避免整屏发糊（<code>sactx-…-BG-…</code> 只开 Crunch 不降尺寸）。</p>
+  <table>
+    <thead><tr><th>文件</th><th class="num">原导入</th><th class="num">新导入</th><th class="num">原 MB</th><th class="num">新 MB</th><th class="num">省 MB</th></tr></thead>
+    <tbody>
+      <tr><td class="path">MyAssets\Sprites\512 (1).png</td><td class="num">1592x2048</td><td class="num">796x1024</td><td class="num">3.11</td><td class="num">0.58</td><td class="num g">2.53</td></tr>
+      <tr><td class="path">MyAssets\Sprites\WinEmoji.png</td><td class="num">1433x2048</td><td class="num">716x1024</td><td class="num">2.80</td><td class="num">0.52</td><td class="num g">2.27</td></tr>
+      <tr><td class="path">MyAssets\Sprites\sactx-…-BG-….png</td><td class="num">2048x2048</td><td class="num">2048x2048</td><td class="num">4.00</td><td class="num">3.00</td><td class="num g">1.00</td></tr>
+      <tr><td class="path">MyAssets\Sprites\Btn2.png</td><td class="num">1310x607</td><td class="num">1024x474</td><td class="num">0.76</td><td class="num">0.35</td><td class="num g">0.41</td></tr>
+      <tr><td class="path">MyAssets\Sprites\Characters\1.png</td><td class="num">1024x1024</td><td class="num">1024x1024</td><td class="num">1.00</td><td class="num">0.75</td><td class="num g">0.25</td></tr>
+      <tr><td class="path">MyAssets\Sprites\Characters\14.png</td><td class="num">1024x1024</td><td class="num">1024x1024</td><td class="num">1.00</td><td class="num">0.75</td><td class="num g">0.25</td></tr>
+      <tr><td class="path">MyAssets\Sprites\radial_lines.png</td><td class="num">1016x1016</td><td class="num">1016x1016</td><td class="num">0.98</td><td class="num">0.74</td><td class="num g">0.25</td></tr>
+      <tr><td class="path">MyAssets\Sprites\Spinner.png</td><td class="num">892x892</td><td class="num">892x892</td><td class="num">0.76</td><td class="num">0.57</td><td class="num g">0.19</td></tr>
+      <tr><td class="path">…HotelsStatsPopup…png</td><td class="num">1024x512</td><td class="num">1024x512</td><td class="num">0.50</td><td class="num">0.38</td><td class="num g">0.12</td></tr>
+      <tr><td class="path">MyAssets\Sprites\belt.png</td><td class="num">700x700</td><td class="num">700x700</td><td class="num">0.47</td><td class="num">0.35</td><td class="num g">0.12</td></tr>
+      <tr><td class="path">其余 54 张（512² 图标等）</td><td class="num">—</td><td class="num">—</td><td class="num">7.0</td><td class="num">5.3</td><td class="num g">1.7</td></tr>
+    </tbody>
+    <tfoot><tr><td>合计 64 张</td><td class="num">—</td><td class="num">—</td><td class="num">21.83</td><td class="num">13.09</td><td class="num g">8.74</td></tr></tfoot>
+  </table>
+  <p class="small">注：<code>512 (1).png</code> 与 <code>WinEmoji.png</code> 是 Multiple 雪碧图（spriteMode=2），
+     降尺寸时 Unity 会按比例同步缩放子图 rect，不会错位。</p>
+
+  <h2>三、音频优化 <span class="n">2.23 MB → 0.33 MB（省 1.90 MB）</span></h2>
+  <table>
+    <thead><tr><th>文件</th><th class="num">原始</th><th class="num">Vorbis 后</th><th>设置</th></tr></thead>
+    <tbody>
+      <tr><td class="path">MyAssets\Audio\BG.wav</td><td class="num">1378 KB</td><td class="num">≈ 221 KB</td><td class="small">q0.35 · CompressedInMemory · 保留立体声</td></tr>
+      <tr><td class="path">MyAssets\Audio\WifiError.wav</td><td class="num">406 KB</td><td class="num">≈ 53 KB</td><td class="small">q0.3 · mono</td></tr>
+      <tr><td class="path">MyAssets\Audio\Retry.wav</td><td class="num">212 KB</td><td class="num">≈ 28 KB</td><td class="small">q0.3 · mono</td></tr>
+      <tr><td class="path">其余 15 个音效</td><td class="num">约 285 KB</td><td class="num">≈ 35 KB</td><td class="small">q0.3 · mono</td></tr>
+    </tbody>
+    <tfoot><tr><td>合计 18 个</td><td class="num">2.23 MB</td><td class="num g">0.33 MB</td><td></td></tr></tfoot>
+  </table>
+
+  <h2>四、字体优化 <span class="n">3.65 MB → 1.10 MB（省 2.56 MB）</span></h2>
+  <table>
+    <thead><tr><th>文件</th><th class="num">原始</th><th class="num">子集后</th><th>保留字符</th></tr></thead>
+    <tbody>
+      <tr><td class="path">AdSDK\Font\DroidSansFallback.ttf</td><td class="num">3115 KB</td><td class="num g">1110 KB</td>
+          <td class="small"><strong>GB2312 全字库 7445 字</strong> + 工程用字 617 + ASCII/标点/符号 ≈ 8493</td></tr>
+      <tr><td class="path">MyAssets\Font\NEXON Football Gothic B.otf</td><td class="num">628 KB</td><td class="num g">16 KB</td>
+          <td class="small">ASCII + Latin-1 + ¥×★ 等 203 个</td></tr>
+    </tbody>
+    <tfoot><tr><td>合计</td><td class="num">3.65 MB</td><td class="num g">1.10 MB</td><td></td></tr></tfoot>
+  </table>
+  <div class="box warn">
+    <h3>⚠ 字体已做子集化 —— 原件已完整备份，可秒回滚</h3>
+    <p class="small" style="margin:6px 0">
+      <code>DroidSansFallback</code> 是工程里 29 处 UI Text 的运行时字体（<code>includeFontData: 1</code>，字体会整份进包），
+      所以直接对文件做子集化即可 1:1 减少包体。<strong>保留了 GB2312 全部 7445 个码位</strong>（覆盖简体中文 99.9%+）、
+      工程内实际出现的 617 个汉字、以及 ASCII / 拉丁 / 常用符号，理论不存在缺字白块。
+      已校验：<code>金币不足点击开始商店抽奖下一关…</code> 等关键文案<strong>全部命中</strong>。
+    </p>
+    <p class="small" style="margin:6px 0">
+      原始完整体（3115 KB / 628 KB）已备份至：
+      <code>…\Unity6000_打个毛线_Rope\_RopeFont_Backup_20260919_111034\</code> —— 直接覆盖回去即可恢复。
+    </p>
+  </div>
+
+  <h2>五、明确<strong>没有</strong>改动的内容 <span class="n">（附原因）</span></h2>
+  <table>
+    <thead><tr><th>对象</th><th class="num">大小</th><th>为什么不动</th></tr></thead>
+    <tbody>
+      <tr>
+        <td class="path">AdSDK\Font\汉仪蝶语体简 1.TTF</td><td class="num">3.32 MB</td>
+        <td class="small"><span class="tag keep">不进包</span>全工程 <strong>0 处引用</strong>，且不在 Resources 下，
+            Unity 构建时会自动剔除，<strong>不占包体</strong>。你没有让我删字体文件，故原样保留（仅影响编辑器导入速度）。</td>
+      </tr>
+      <tr>
+        <td class="path">关卡 JSON ×849</td><td class="num">12.81 MB</td>
+        <td class="small"><span class="tag keep">已压到极限</span>实测全部已是单行紧凑格式，重新 minify 只省 1%；
+            构建时由 Brotli 压到约 2.9 MB。想再省需改数据格式（见下方「后续可选项」）。</td>
+      </tr>
+      <tr>
+        <td class="path">TextMesh Pro\Resources\LiberationSans SDF</td><td class="num">2.16 MB</td>
+        <td class="small"><span class="tag keep">TMP 兜底</span>是 TMP 默认字体，回退链依赖它，删除风险高、收益小。</td>
+      </tr>
+      <tr>
+        <td class="path">Chinese SDF.asset（中文字体图集）</td><td class="num">4.19 MB</td>
+        <td class="small"><span class="tag keep">保稳定</span>当前 448 字形需 2 页 1024²。把采样字号 48→40 可压到单页省约 1 MB，
+            但需要重新生成 SDF，有触发 TMP 图集异常的风险，收益不大，见「后续可选项」。</td>
+      </tr>
+      <tr>
+        <td class="path">GoogleMobileAds / MDR / EDM</td><td class="num">2.90 MB</td>
+        <td class="small"><span class="tag keep">编辑器专用</span>绝大部分在 <code>/Editor/</code> 下不进包；属「拆 AdMob」任务范围，另行处理。</td>
+      </tr>
+      <tr>
+        <td class="path">Plugins\iOS\unity-plugin-library.a</td><td class="num">3.06 MB</td>
+        <td class="small"><span class="tag keep">平台无关</span>iOS 静态库，WebGL / 抖音构建不会引用。</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>六、顺带修掉的一个运行时隐患 <span class="n">（非包体，但影响真机体验）</span></h2>
+  <div class="box">
+    <p style="margin:6px 0"><code>LevelSpawner.cs</code> 里每关都会执行：</p>
+    <p style="margin:10px 0"><code>Debug.Log($"JSON Content: {jsonContent}");</code></p>
+    <p style="margin:6px 0" class="small">单关 JSON 中位数 15.6 KB，最大 40 KB —— <strong>每关都往控制台打一份完整 JSON</strong>，
+       在 WebGL/真机上会造成明显卡顿与日志膨胀。已改为 <code>#if UNITY_EDITOR</code> 包裹，构建后自动剥离。</p>
+  </div>
+
+  <h2>七、后续可选项 <span class="n">（本次未做，需要你点头）</span></h2>
+  <table>
+    <thead><tr><th>方案</th><th class="num">再省</th><th>代价 / 风险</th></tr></thead>
+    <tbody>
+      <tr><td>中文 SDF 采样字号 48 → 40</td><td class="num g">≈ 1 MB</td>
+          <td class="small">需删掉旧 asset 重新生成；TMP 图集偶发空引用（已有重试兜底）。Toast 文字可能略微变软。</td></tr>
+      <tr><td>849 个关卡 JSON 合并为单个 Brotli 包，运行时解压</td><td class="num g">≈ 2-3 MB</td>
+          <td class="small">不依赖构建压缩、额外收益有限（构建已压缩）；需改 <code>LevelSpawner</code> 与场景序列化列表，收益/风险比一般。</td></tr>
+      <tr><td>关卡数据改二进制紧凑格式</td><td class="num g">≈ 8-9 MB</td>
+          <td class="small">收益最大，但要重写关卡解析与导出流程，改动面大，建议单独排期。</td></tr>
+      <tr><td>删除未引用的 <code>汉仪蝶语体简 1.TTF</code></td><td class="num">0 MB</td>
+          <td class="small">不影响包体，只加快编辑器导入。<strong>因你要求不删字体，默认保留。</strong></td></tr>
+    </tbody>
+  </table>
+
+  <hr>
+
+  <h2>八、需要你做的三件事</h2>
+  <div class="box warn">
+    <ul>
+      <li><strong>让 Unity 重新导入</strong>：本次改动的是 <code>.meta</code> 与字体文件，Unity 目前是打开状态。
+          切回 Unity 窗口，等待自动 Reimport + 重新编译完成（右下角进度条走完）。<span class="tag todo">必做</span></li>
+      <li><strong>确认 0 编译错误</strong>：之前 <code>Btn_Ad.cs</code> 的 24 个 <code>CS0246</code> 已重写修复；
+          本次又改了 <code>LevelSpawner.cs</code>。请在 Console 里确认没有红色 error。<span class="tag todo">必做</span></li>
+      <li><strong>填抖音广告位 ID</strong>：<code>Assets/AdSDK/Scripts/TikTokAdBootstrap.cs</code> 里的
+          <code>AppId</code> / <code>VideoAdIds</code> / <code>InterAdIds</code> 目前是空的，不填不会真正拉起广告。<span class="tag todo">必做</span></li>
+    </ul>
+  </div>
+  <div class="box risk">
+    <h3>⚠ 一个注意点</h3>
+    <p class="small" style="margin:6px 0">
+      <code>Gameplay.unity</code> / <code>CoinShop.unity</code> 之前是用脚本直接改写 YAML 完成中文化与广告按钮替换的。
+      如果你在 Unity 编辑器里对这两个场景做了「保存」，编辑器内存里的旧内容可能覆盖掉脚本的改动。
+      <strong>建议先切回 Unity 让它 Reimport 完成，确认界面中文正常，再继续编辑场景。</strong>
+    </p>
+  </div>
+
+  <h2>九、回滚方法</h2>
+  <div class="flex">
+    <div class="box">
+      <h3>纹理 / 音频（.meta）</h3>
+      <p class="small">备份：<code>…\_RopeMeta_Backup_20260919_110951\</code>（82 个文件）</p>
+      <p class="small">把备份里的 <code>Assets\…</code> 目录整体覆盖回工程即可。</p>
+    </div>
+    <div class="box">
+      <h3>字体</h3>
+      <p class="small">备份：<code>…\_RopeFont_Backup_20260919_111034\</code>（2 个原件）</p>
+      <p class="small">把两个字体文件覆盖回 <code>Assets\AdSDK\Font\</code> 与 <code>Assets\MyAssets\Font\</code>。</p>
+    </div>
+  </div>
+
+  <p class="small" style="margin-top:36px;color:var(--dim)">
+    报告生成时间：2026-09-18 · 体积数据由脚本按导入设置与像素量计算，最终请以 Unity Build Report 为准。
+  </p>
+
+</div>
+</body>
+</html>

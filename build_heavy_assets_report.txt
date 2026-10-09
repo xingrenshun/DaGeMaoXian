@@ -1,0 +1,117 @@
+项目: D:\Unity\Unity6000_打个毛线_Rope\Unity6000_打个毛线_Rope\Unity6000_打个毛线_Rope\Unity6000_打个毛线_Rope
+扫描 Assets 下文件总数: 2660
+Assets 总大小: 55.44 MB
+
+=== 字体文件 ===
+小计: 6 个, 7.95 MB
+  3.32 MB    AdSDK\Font\汉仪蝶语体简 1.TTF
+  3.04 MB    AdSDK\Font\DroidSansFallback.ttf
+  627.64 KB  MyAssets\Font\NEXON Football Gothic B.otf
+  616.91 KB  MyAssets\Font\NEXON Football Gothic L.otf
+  341.99 KB  TextMesh Pro\Fonts\LiberationSans.ttf
+  34.92 KB   MyAssets\Font\Wonder Boys - Personal Use.ttf
+
+=== 音频文件 ===
+小计: 18 个, 2.23 MB
+  1.35 MB    MyAssets\Audio\BG.wav
+  405.76 KB  MyAssets\Audio\WifiError.wav
+  211.66 KB  MyAssets\Audio\Retry.wav
+  64.28 KB   MyAssets\Audio\IceBreak.ogg
+  46.03 KB   MyAssets\Audio\RollSpawn.ogg
+  26.84 KB   MyAssets\Audio\Unlock.ogg
+  26.57 KB   MyAssets\Audio\Buy.ogg
+  25.25 KB   MyAssets\Audio\Win.ogg
+  23.19 KB   MyAssets\Audio\Key.ogg
+  22.86 KB   MyAssets\Audio\RollMove.mp3
+  15.71 KB   MyAssets\Audio\Reward.ogg
+  13.00 KB   MyAssets\Audio\Toast.wav
+  10.81 KB   MyAssets\Audio\Coins.ogg
+  5.41 KB    PickerWheel\Sounds\tick2.ogg
+  4.93 KB    PickerWheel\Sounds\tick1.ogg
+  4.39 KB    MyAssets\Audio\RollMoved.ogg
+  2.15 KB    MyAssets\Audio\Click.mp3
+  672.00 B   MyAssets\Audio\RollDestroy.mp3
+
+=== Mesh/模型文件 ===
+小计: 3 个, 189.77 KB
+  153.98 KB  Simple Toon\Demo\Models\Bear.fbx
+  20.03 KB   Simple Toon\Demo\Models\Cone.fbx
+  15.76 KB   Simple Toon\Demo\Models\Chamber.fbx
+
+=== Resources 目录资源 ===
+小计: 123 个, 3.50 MB
+  2.16 MB    TextMesh Pro\Resources\Fonts & Materials\LiberationSans SDF.asset
+  233.78 KB  GoogleMobileAds\Editor\Resources\Ump\ConsentForm.png
+  201.45 KB  GoogleMobileAds\Editor\Resources\PlaceholderAds\AdImages\1024x768.png
+  177.63 KB  GoogleMobileAds\Editor\Resources\PlaceholderAds\AdImages\768x1024.png
+  65.81 KB   GoogleMobileAds\Editor\Resources\PlaceholderAds\AdImages\480x320.png
+  63.00 KB   GoogleMobileAds\Editor\Resources\PlaceholderAds\AdImages\320x480.png
+  45.55 KB   GoogleMobileAds\Editor\Resources\PlaceholderAds\AdImages\300x250.png
+  43.46 KB   AdSDK\Resources\ui_upgrades_frame.png
+  32.53 KB   GoogleMobileAds\Editor\Resources\PlaceholderAds\AdImages\AdInspectorHome.png
+  32.17 KB   GoogleMobileAds\Editor\Resources\PlaceholderAds\AdImages\728x90.png
+  29.98 KB   AdSDK\Resources\AdSliderBar.prefab
+  29.93 KB   AdSDK\Resources\AdConfirm.prefab
+  28.47 KB   AdSDK\Resources\AdSliderBar_Hor.prefab
+  26.70 KB   GoogleMobileAds\Editor\Resources\PlaceholderAds\AdImages\320x100.png
+  19.74 KB   GoogleMobileAds\Editor\Resources\PlaceholderAds\AdImages\468x60.png
+  19.09 KB   AdSDK\Resources\×.png
+  16.72 KB   GoogleMobileAds\Editor\Resources\PlaceholderAds\Rewarded\768x1024.prefab
+  16.14 KB   GoogleMobileAds\Editor\Resources\PlaceholderAds\Rewarded\1024x768.prefab
+  15.02 KB   GoogleMobileAds\Editor\Resources\Ump\ConsentForm.prefab
+  14.57 KB   GoogleMobileAds\Editor\Resources\PlaceholderAds\AdImages\320x50.png
+  14.44 KB   GoogleMobileAds\Editor\Resources\PlaceholderAds\Interstitials\768x1024.prefab
+  14.41 KB   GoogleMobileAds\Editor\Resources\PlaceholderAds\AdInspector\768x1024.prefab
+  13.93 KB   GoogleMobileAds\Editor\Resources\PlaceholderAds\AppOpen\768x1024.prefab
+  13.92 KB   GoogleMobileAds\Editor\Resources\PlaceholderAds\AppOpen\1024x768.prefab
+  13.92 KB   GoogleMobileAds\Editor\Resources\PlaceholderAds\Interstitials\1024x768.prefab
+  13.13 KB   TextMesh Pro\Resources\Sprite Assets\EmojiOne.asset
+  9.12 KB    TextMesh Pro\Resources\Fonts & Materials\LiberationSans SDF - Fallback.asset
+  8.48 KB    GoogleMobileAds\Editor\Resources\PlaceholderAds\Banners\SMART_BANNER.prefab
+  8.48 KB    GoogleMobileAds\Editor\Resources\PlaceholderAds\Banners\ADAPTIVE.prefab
+  8.48 KB    GoogleMobileAds\Editor\Resources\PlaceholderAds\Banners\CENTER.prefab
+
+=== 场景文件 ===
+小计: 6 个, 561.92 KB
+  363.03 KB  MyAssets\Scene\Gameplay.unity
+  98.35 KB   MyAssets\Scene\CoinShop.unity
+  29.79 KB   Simple Toon\Demo\Scenes\DemoScene1.unity
+  25.21 KB   Simple Toon\Demo\Scenes\DemoScene3.unity
+  25.02 KB   Simple Toon\Demo\Scenes\DemoScene2.unity
+  20.51 KB   QuickOutline\Samples\Scenes\QuickOutline.unity
+
+=== 其他大文件 (>1MB) ===
+小计: 3 个, 6.38 MB
+  3.06 MB    Plugins\iOS\unity-plugin-library.a
+  2.16 MB    TextMesh Pro\Resources\Fonts & Materials\LiberationSans SDF.asset
+  1.16 MB    Plugins\ByteGame\com.bytedance.starksdk\ttsdk.dll
+
+=== 按顶层目录统计 ===
+  30.02 MB   1934   MyAssets
+  9.44 MB    271    Plugins
+  6.61 MB    56     AdSDK
+  4.51 MB    84     TextMesh Pro
+  1.55 MB    125    GoogleMobileAds
+  1.25 MB    38     Epic Toon FX
+  926.46 KB  30     ExternalDependencyManager
+  557.35 KB  46     Simple Toon
+  463.14 KB  11     MobileDependencyResolver
+  107.76 KB  26     PickerWheel
+  40.02 KB   23     QuickOutline
+  1.90 KB    4      Resources
+  191.00 B   1      MobileDependencyResolver.meta
+  191.00 B   1      PickerWheel.meta
+  172.00 B   1      AdSDK.meta
+  172.00 B   1      Epic Toon FX.meta
+  172.00 B   1      ExternalDependencyManager.meta
+  172.00 B   1      GoogleMobileAds.meta
+  172.00 B   1      MyAssets.meta
+  172.00 B   1      Plugins.meta
+  172.00 B   1      QuickOutline.meta
+  172.00 B   1      Resources.meta
+  172.00 B   1      Simple Toon.meta
+  172.00 B   1      TextMesh Pro.meta
+
+=== 说明 ===
+源文件大小 ≠ 最终包体大小。Unity 会根据平台 Import Settings 重新压缩/采样。
+data-package 大的常见原因：字体（尤其中文字体）、大纹理/图集、未压缩音频、大量 Mesh、Resources 目录冗余。
