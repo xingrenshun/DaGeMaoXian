@@ -2,8 +2,22 @@
 
 > 路径 `D:\Unity\Unity6000_打个毛线_Rope\Unity6000_打个毛线_Rope\Unity6000_打个毛线_Rope\Unity6000_打个毛线_Rope`
 > Unity 6000.2.15f1 · 抖音小游戏（主包上限 30MB）· ColorRope「绳/管排序」玩法
-> ⚠ **上架名「宥如极速冒险」「昇辉极速冒险」= 工程代号「打个毛线 Rope」，同一个项目。** 名字带"极速冒险"但**玩法与竞速无关**，写文案一律以真实玩法为准。
-> 两个上架名是**同一工程换品牌前缀**（无副本目录），两份 `*_作品介绍.txt` 都放本工程根，靠文件名区分，**措辞须判重**。
+> ⚠ **上架名「宥如极速冒险」「昇辉极速冒险」「秘境寻踪奇旅」= 工程代号「打个毛线 Rope」，同一个项目。**
+> 名字带"极速冒险/奇旅"但**玩法与竞速、探索、解谜冒险均无关**（是绳线配对整理），写文案一律以真实玩法为准。
+> 三个上架名**全无副本目录**，三份 `*_作品介绍.txt` 都放本工程根，靠文件名区分，**措辞须判重**。
+> ⚠ **命名风格会变**：前两个是「品牌前缀+极速冒险」，第三个「秘境寻踪奇旅」换成了**抽象诗意系**
+> （与 maomidiaoyu / jiaotonzhihuiwang 等工程同名系风格）。**拿到这个名字曾无法判断归属**——
+> 工程目录、历史文案、会话备份里全搜不到 `mjxzql` 副本，是靠问用户才确认的。
+> **下次再遇到全新名字，先查副本目录 + `.modify_backup_meta`，查不到就直接问，别猜。**
+
+## 版本控制
+
+- 远程 `https://github.com/xingrenshun/DaGeMaoXian.git`（public），分支 `main`，`-u` 已关联。
+  首个提交 `f545b91`（备注「源码」）= 2767 文件 / 50.6MB。
+- **仓库根的 `.gitignore` / `.gitattributes` 是新增的，别删**：工程 2.0GB，`Library/` 独占 1.8GB、
+  `tt-minigame/` 108MB，全靠它拦住；`.gitattributes` 把 `*.unity/*.prefab/*.asset/*.meta` 标 `-text` 防换行转换损坏 YAML。
+- 本地已设 `core.autocrlf false`（全局为 true）。凭证走 `credential.helper=store`，免密。
+  推送前先 `netstat -ano | grep 7897` 确认 Clash 代理在监听。
 
 ## 工程结构速查
 
@@ -32,11 +46,17 @@
 - **可点规则**：上下左右任一格为空**或出界**即可点（`RollMovableManager.IsRollPathBlocked`）；
   开关在 `Roll.OnMouseDown` 的 `!isMovable || isFrozen || lockObj || !gameStarted`。
 - **失败**：所有收纳槽非空 且 无任一队列前端颜色可配（`RollsManager.CheckRetryInvoke`）。
-- **规模**：840 关；台面 22 种尺寸，**2×3 起步 → 最大 8×8**（6×6:354 / 7×7:179 / 7×6:132）；
-  线轴 **6–64 个**（均值 41.4）；每关配色 **2–11 种**（10 色 663 关、9 色 136 关、11 色 9 关）。
+- **规模**（10-09 按真实 JSON 字段 `gridSize{x,y}` / `totalBlock` / `blocks` 重跑校正，**旧记录的"最大 8×8"不准**）：
+  840 关；台面 **22 种尺寸**，x∈[2,9]、y∈[3,9]；**格子数最大是 8×8=64 格，但存在 9×6 / 9×7 / 7×9 的长条台面**，
+  所以别写"最大 8×8"（会被 9 宽的关卡打脸），要写就写"尺寸共 22 种"。
+  线轴 **6–64 个**（均值 41.4，= `len(blocks)`；`totalBlock` 最多 **78**，多出来的是管道运行时吐的）；
+  每关配色 **2–11 种**（10 色 664 关、9 色 135 关、11 色 9 关）。
 - **收纳槽**：`<4 关=4 个、4–11 关=5 个、12–23 关=6 个、≥24 关=7 个`（`LevelSpawner.SpawnRollContainers`）。
-- **机关累计次数**：遮布 2397（`isHidden`，`Roll.CanMove()` 里自动揭开）、冰块 334（多层，逐层敲碎）、
-  锁 84 / 钥匙 70、成对连环 `linkType==1` 644、`Obstacle_` 固定障碍、`Pipe_` 管道（占格+吐新线轴）。
+- **机关累计次数**（`LevelSpawner.SpawnBlocks` 的 `switch(blockData.type)` + `state` 字段）：遮布 2397（`isHidden`，`Roll.CanMove()` 里自动揭开）、
+  冰块 334（`isFrozen`，多层逐层敲碎）、锁 84 / 钥匙 **66**（`isLocked`/`isKey`）、成对连环 `linkType==1` **641**；
+  **管道 = `type==3`（1895 个，`pipePrefab`，`attachments[].color` 决定吐什么色）**、
+  **固定障碍 = `state.color==0`（走 `SpawnObstacle`）**，两者**在关卡 JSON 里都没有 `Pipe_`/`Obstacle_` 字样**
+  （那是运行时 `gameObject.name`）——**grep "Pipe" 搜不到不等于没这个机制**，要查 `type` 数值。
 - **系统**：金币（初始 100）；每日免费转盘 24h **真发金币**；跳关 **150 金币**（`Gameplay.unity` 的 `skipLevelCoinAmount`）；
   「金币商店」实为**看广告换币**（`IAPShopManager.PurchaseComplete` → `ShowRewardedAdForCoins`）；音效 17 处。
 - ⚠ **震动反馈在 WebGL/抖音上不生效**（`Vibration.cs` 只在 `RuntimePlatform.Android` 初始化 vibrator），**文案别写"震动"**。
